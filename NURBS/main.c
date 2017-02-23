@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <gl\glut.h>
+#include <string.h>
 
 //////////////////
 /*	VARIABLES	*/
@@ -30,8 +31,7 @@ int u, v;
 /*	DRAW AXIS FUNCTION	*/
 //////////////////////////
 
-void DrawAxis()
-{
+void DrawAxis(){
 	glLineWidth(1.0f);
 	glBegin(GL_LINES);
 
@@ -54,8 +54,7 @@ void DrawAxis()
 /*	WINDOW RESIZE FUNCTION	*/
 //////////////////////////////
 
-void WindowResize(int width, int height)
-{
+void WindowResize(int width, int height){
 	windowWidth = width;
 	windowHeight = height;
 
@@ -66,22 +65,11 @@ void WindowResize(int width, int height)
 	gluPerspective(OBSERWATOR_FOV_Y, (float)windowWidth / (float)windowHeight, 1.0, 1000.0);
 }
 
-//////////////////////////////////
-/*	NURBS ALGORITHM FUNCTION	*/
-//////////////////////////////////
+///////////////////////////////////////
+/*	CALCULATE POINTS IF NOT INCLUDED */
+///////////////////////////////////////
 
-void DrawNurbs(){
-
-	glColor3f(1.0, 0, 1.0);
-	//glEnable(GL_LIGHT0);
-	glEnable(GL_DEPTH_TEST);
-	glEnable(GL_AUTO_NORMAL);
-	glEnable(GL_NORMALIZE);
-	nurb = gluNewNurbsRenderer();
-	gluNurbsProperty(nurb, GLU_SAMPLING_TOLERANCE, 25.0);
-	gluNurbsProperty(nurb, GLU_DISPLAY_MODE, GLU_OUTLINE_POLYGON);
-
-
+void CalculatePoints(){
 	for (u = 0; u<4; u++) {
 		for (v = 0; v<4; v++) {
 
@@ -142,12 +130,25 @@ void DrawNurbs(){
 	pts2[3][3][2] = 1;
 	pts3[3][0][2] = 1;
 	pts4[0][3][2] = 1;
+}
+
+//////////////////////////////////
+/*	NURBS ALGORITHM FUNCTION	*/
+//////////////////////////////////
+
+void DrawNurbs(){
+
+	glColor3f(1.0, 0, 1.0);
+	//glEnable(GL_LIGHT0);
+	glEnable(GL_DEPTH_TEST);
+	glEnable(GL_AUTO_NORMAL);
+	glEnable(GL_NORMALIZE);
+	nurb = gluNewNurbsRenderer();
+	gluNurbsProperty(nurb, GLU_SAMPLING_TOLERANCE, 25.0);
+	gluNurbsProperty(nurb, GLU_DISPLAY_MODE, GLU_OUTLINE_POLYGON);	
 
 	glMatrixMode(GL_PROJECTION);
-	//gluPerspective(55.0, 1.0, 2.0, 24.0);
 	glMatrixMode(GL_MODELVIEW);
-	//glTranslatef(0.0, 0.0, -15.0);
-	//glRotatef(330.0, 1.0, 0.0, 0.0);
 
 	gluBeginSurface(nurb);
 	gluNurbsSurface(nurb, 8, knots, 8, knots,
@@ -182,8 +183,7 @@ void DrawNurbs(){
 /*	KEYBOARD SPECIAL KEYS FUNCTION	*/
 //////////////////////////////////////
 
-void KeyboardSpecialKeys(int key, int x, int y)
-{
+void KeyboardSpecialKeys(int key, int x, int y){
 	switch (key)
 	{
 	case GLUT_KEY_UP:
@@ -214,8 +214,7 @@ void KeyboardSpecialKeys(int key, int x, int y)
 /*	KEYBOARD KEYS FUNCTION	*/
 //////////////////////////////
 
-void KeyboardKeys(unsigned char key, int x, int y)
-{
+void KeyboardKeys(unsigned char key, int x, int y){
 	switch (key)
 	{
 
@@ -248,8 +247,7 @@ void KeyboardKeys(unsigned char key, int x, int y)
 /*	DISPLAY FUNCTION	*/
 //////////////////////////
 
-void Display(void)
-{
+void Display(void){
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	glMatrixMode(GL_MODELVIEW);
@@ -268,41 +266,83 @@ void Display(void)
 	glutSwapBuffers();
 }
 
+//////////////////////////////
+/*	OPEN FILE WITH POINTS	*/
+//////////////////////////////
+
+void OpenFile(char **fileName){
+	FILE *pointsFile;
+	fopen_s(&pointsFile,fileName, "r");
+	const size_t line_size = 300;
+	char* line = malloc(line_size);
+	while (fgets(line, line_size, pointsFile) != NULL)  {
+		printf(line);
+	}
+	free(line);
+	fclose(pointsFile);
+}
+
+
 //////////////////////
 /*	MAIN FUNCTION	*/
 //////////////////////
 
-int main(int argc, char **argv){
+int main(int argc, char *argv[]){
 
-glutInit(&argc, argv);
+	printf("Number of arguments: %d", argc);
+	int i = 1;
+	for (i; i < argc; i++){
+		printf("arg%d=%s \n",i,argv[i]);
+		
+	}
+	if (argc>1)
+		OpenFile(argv[1]);
 
-glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
+	CalculatePoints();
+	
+	for (u = 0; u < 4; u++){
+		for (v = 0; v < 4; v++){
+			printf("%f ", pts1[u][v][0]);
+			printf("%f ", pts1[u][v][1]);
+			printf("%f \n", pts1[u][v][2]);
+		}
+	}
+	
+	char *myargv[1];
+	int myargc = 1;
+	myargv[0] =_strdup("NURBS");
 
-glutInitWindowPosition(100, 100);
+	glutInit(&myargc, myargv);
 
-glutInitWindowSize(windowWidth, windowHeight);
+	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
 
-glutCreateWindow("NURBS");
+	glutInitWindowPosition(0, 0);
 
-glEnable(GL_DEPTH_TEST);
+	glutInitWindowSize(windowWidth, windowHeight);
 
-glClearDepth(1000.0);
+	glutCreateWindow("NURBS");
+	// full screen mode
+	//glutFullScreen();
 
-glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+	glEnable(GL_DEPTH_TEST);
 
-glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	glClearDepth(1000.0);
 
-glutDisplayFunc(Display);
+	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 
-glutReshapeFunc(WindowResize);
+	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
-glutIdleFunc(Display);
+	glutDisplayFunc(Display);
 
-glutKeyboardFunc(KeyboardKeys);
+	glutReshapeFunc(WindowResize);
 
-glutSpecialFunc(KeyboardSpecialKeys);
+	glutIdleFunc(Display);
 
-glutMainLoop();
+	glutKeyboardFunc(KeyboardKeys);
 
-return 0;
+	glutSpecialFunc(KeyboardSpecialKeys);
+
+	glutMainLoop();
+
+	return 0;
 }
