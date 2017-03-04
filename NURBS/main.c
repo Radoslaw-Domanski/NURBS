@@ -21,9 +21,9 @@ GLfloat positionZ = 0.0;
 GLfloat positionY = 20.0;
 GLfloat positionX = 20.0;
 
-GLfloat knots[8] = { 0.0, 0.0, 0.0, 0.0, 0.8, 0.8, 0.8, 0.8 };
-GLfloat pts1[4][4][3], pts2[4][4][3];
-GLfloat pts3[4][4][3], pts4[4][4][3];
+GLfloat knotsU[8] = { 0.0, 0.0, 0.0, 0.0, 0.8, 0.8, 0.8, 0.8 };
+GLfloat knotsV[8] = { 0.0, 0.0, 0.0, 0.0, 0.8, 0.8, 0.8, 0.8 };
+GLfloat pts1[4][4][3];
 GLUnurbsObj *nurb;
 int u, v;
 
@@ -36,16 +36,16 @@ void DrawAxis(){
 	glBegin(GL_LINES);
 
 	glColor3f(1.0, 0.0, 0.0);
-	glVertex3f(-100.0, 0.0, 0.0);
-	glVertex3f(100.0, 0.0, 0.0);
+	glVertex3f(-500.0, 0.0, 0.0);
+	glVertex3f(500.0, 0.0, 0.0);
 
 	glColor3f(0.0, 1.0, 0.0);
-	glVertex3f(0.0, -100.0, 0.0);
-	glVertex3f(0.0, 100.0, 0.0);
+	glVertex3f(0.0, -500.0, 0.0);
+	glVertex3f(0.0, 500.0, 0.0);
 
 	glColor3f(0.0, 0.0, 1.0);
-	glVertex3f(0.0, 0.0, -100.0);
-	glVertex3f(0.0, 0.0, 100.0);
+	glVertex3f(0.0, 0.0, -500.0);
+	glVertex3f(0.0, 0.0, 500.0);
 
 	glEnd();
 }
@@ -72,64 +72,16 @@ void WindowResize(int width, int height){
 void CalculatePoints(){
 	for (u = 0; u<4; u++) {
 		for (v = 0; v<4; v++) {
-
 			pts1[u][v][0] = 2.0*((GLfloat)u);
 			pts1[u][v][1] = 2.0*((GLfloat)v);
 			if ((u == 1 || u == 2) && (v == 1 || v == 2))
-
 				pts1[u][v][2] = 6.0;
 			else
 				pts1[u][v][2] = 0.0;
-
-
-			pts2[u][v][0] = 2.0*((GLfloat)u - 3.0);
-			pts2[u][v][1] = 2.0*((GLfloat)v - 3.0);
-			if ((u == 1 || u == 2) && (v == 1 || v == 2))
-			if (u == 1 && v == 1)
-
-				pts2[u][v][2] = 15.0;
-			else
-
-				pts2[u][v][2] = -2.0;
-			else
-				pts2[u][v][2] = 0.0;
-
-
-			pts3[u][v][0] = 2.0*((GLfloat)u - 3.0);
-			pts3[u][v][1] = 2.0*((GLfloat)v);
-			if ((u == 1 || u == 2) && (v == 1 || v == 2))
-			if (u == 1 && v == 2)
-
-				pts3[u][v][2] = 11.0;
-			else
-
-				pts3[u][v][2] = 2.0;
-			else
-				pts3[u][v][2] = 0.0;
-
-
-			pts4[u][v][0] = 2.0*((GLfloat)u);
-			pts4[u][v][1] = 2.0*((GLfloat)v - 3.0);
-			if ((u == 1 || u == 2 || u == 3) && (v == 1 || v == 2))
-			if (v == 1)
-
-				pts4[u][v][2] = -2.0;
-			else
-
-				pts4[u][v][2] = 5.0;
-			else
-				pts4[u][v][2] = 0.0;
 		}
 	}
-
 	pts1[3][3][2] = 6;
-
-	pts2[0][0][2] = -2;
-
 	pts1[0][0][2] = 1;
-	pts2[3][3][2] = 1;
-	pts3[3][0][2] = 1;
-	pts4[0][3][2] = 1;
 }
 
 //////////////////////////////////
@@ -138,7 +90,7 @@ void CalculatePoints(){
 
 void DrawNurbs(){
 
-	glColor3f(1.0, 0, 1.0);
+	glColor3f(1.0, 1.0, 1.0);
 	//glEnable(GL_LIGHT0);
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_AUTO_NORMAL);
@@ -151,31 +103,10 @@ void DrawNurbs(){
 	glMatrixMode(GL_MODELVIEW);
 
 	gluBeginSurface(nurb);
-	gluNurbsSurface(nurb, 8, knots, 8, knots,
+	gluNurbsSurface(nurb, 8, knotsU, 8, knotsV,
 		4 * 3, 3, &pts1[0][0][0],
 		4, 4, GL_MAP2_VERTEX_3);
 	gluEndSurface(nurb);
-
-	gluBeginSurface(nurb);
-	gluNurbsSurface(nurb, 8, knots, 8, knots,
-		4 * 3, 3, &pts2[0][0][0],
-		4, 4, GL_MAP2_VERTEX_3);
-	gluEndSurface(nurb);
-
-
-	gluBeginSurface(nurb);
-	gluNurbsSurface(nurb, 8, knots, 8, knots,
-		4 * 3, 3, &pts3[0][0][0],
-		4, 4, GL_MAP2_VERTEX_3);
-	gluEndSurface(nurb);
-
-
-	gluBeginSurface(nurb);
-	gluNurbsSurface(nurb, 8, knots, 8, knots,
-		4 * 3, 3, &pts4[0][0][0],
-		4, 4, GL_MAP2_VERTEX_3);
-	gluEndSurface(nurb);
-
 
 }
 
@@ -270,19 +201,91 @@ void Display(void){
 /*	OPEN FILE WITH POINTS	*/
 //////////////////////////////
 
-void OpenFile(char **fileName){
+void insertPoints(char **fileName){
 	FILE *pointsFile;
 	fopen_s(&pointsFile,fileName, "r");
 	const size_t line_size = 300;
 	char* line = malloc(line_size);
+	char separator[] = " ,;";
+	char *tmp;
+	int u = 0, v = 0, i = 0;
+	char *nextToken = NULL;
 	while (fgets(line, line_size, pointsFile) != NULL)  {
-		printf(line);
+			tmp = strtok_s(line, separator, &nextToken);
+			while (tmp != NULL){
+				pts1[u][v][i] = atof(tmp);
+				//printf("pts[%d][%d][%d] : %.2f", u, v, i, pts1[u][v][i]);
+				tmp = strtok_s(NULL, separator, &nextToken);
+				i++;
+				if (i == 3){
+					i = 0;
+					v++;
+					if (v == 4){
+						u++;
+						v = 0;
+						if (u == 4)
+							u = 0;
+					}
+				}
+			}
 	}
 	free(line);
 	fclose(pointsFile);
 }
 
+void insertWeights(char **fileName){
+	FILE *weightsFile;
+	fopen_s(&weightsFile, fileName, "r");
+	const size_t line_size = 300;
+	char* line = malloc(line_size);
+	int u = 0, v = 0, i = 0, y = 0;
+	while (fgets(line, line_size, weightsFile) != NULL)  {
+		printf("%.2f \n", atof(line));
+		for (i = 0; i < 3;i++)
+			pts1[u][v][i] = pts1[u][v][i] * atof(line);
+		v++;
+		if (v == 4){
+			u++;
+			v = 0;
+			if (u == 4)
+				u = 0;
+		}
+	}
+	free(line);
+	fclose(weightsFile);
+}
 
+void insertKnotsU(char **fileName){
+	FILE *KnotsUFile;
+	fopen_s(&KnotsUFile, fileName, "r");
+	const size_t line_size = 300;
+	char* line = malloc(line_size);
+	int u = 0, v = 0, i = 0, y = 0;
+	char *nextToken = NULL;
+	while (fgets(line, line_size, KnotsUFile) != NULL)  {
+		printf("%.2f \n", atof(line));
+		knotsU[i] = atof(line);
+		i++;
+	}
+	free(line);
+	fclose(KnotsUFile);
+}
+
+void insertKnotsV(char **fileName){
+	FILE *KnotsVFile;
+	fopen_s(&KnotsVFile, fileName, "r");
+	const size_t line_size = 300;
+	char* line = malloc(line_size);
+	int u = 0, v = 0, i = 0, y = 0;
+	char *nextToken = NULL;
+	while (fgets(line, line_size, KnotsVFile) != NULL)  {
+		printf("%.2f \n", atof(line));
+		knotsV[i] = atof(line);
+		i++;
+	}
+	free(line);
+	fclose(KnotsVFile);
+}
 //////////////////////
 /*	MAIN FUNCTION	*/
 //////////////////////
@@ -292,22 +295,19 @@ int main(int argc, char *argv[]){
 	printf("Number of arguments: %d", argc);
 	int i = 1;
 	for (i; i < argc; i++){
-		printf("arg%d=%s \n",i,argv[i]);
-		
+		printf("arg%d=%s \n",i,argv[i]);		
 	}
-	if (argc>1)
-		OpenFile(argv[1]);
+	if (argc > 1)
+		insertPoints(argv[1]);
+	else
+		CalculatePoints();
+	if (argc > 2)
+		insertWeights(argv[2]);
+	if (argc > 3)
+		insertKnotsU(argv[3]);
+	if (argc > 4)
+		insertKnotsV(argv[4]);
 
-	CalculatePoints();
-	
-	for (u = 0; u < 4; u++){
-		for (v = 0; v < 4; v++){
-			printf("%f ", pts1[u][v][0]);
-			printf("%f ", pts1[u][v][1]);
-			printf("%f \n", pts1[u][v][2]);
-		}
-	}
-	
 	char *myargv[1];
 	int myargc = 1;
 	myargv[0] =_strdup("NURBS");
