@@ -198,7 +198,7 @@ void Display(void){
 }
 
 //////////////////////////////
-/*	OPEN FILE WITH POINTS	*/
+/*	LOAD POINTS FROM FILE	*/
 //////////////////////////////
 
 void insertPoints(char **fileName){
@@ -233,6 +233,10 @@ void insertPoints(char **fileName){
 	fclose(pointsFile);
 }
 
+//////////////////////////////////////////
+/*	INSERT WEIGHTS OF POINTS FROM FILE	*/
+//////////////////////////////////////////
+
 void insertWeights(char **fileName){
 	FILE *weightsFile;
 	fopen_s(&weightsFile, fileName, "r");
@@ -240,7 +244,7 @@ void insertWeights(char **fileName){
 	char* line = malloc(line_size);
 	int u = 0, v = 0, i = 0, y = 0;
 	while (fgets(line, line_size, weightsFile) != NULL)  {
-		printf("%.2f \n", atof(line));
+		//printf("%.2f \n", atof(line));
 		for (i = 0; i < 3;i++)
 			pts1[u][v][i] = pts1[u][v][i] * atof(line);
 		v++;
@@ -255,6 +259,10 @@ void insertWeights(char **fileName){
 	fclose(weightsFile);
 }
 
+//////////////////////////////////
+/*	INSERT KNOTS U FROM FILE	*/
+//////////////////////////////////
+
 void insertKnotsU(char **fileName){
 	FILE *KnotsUFile;
 	fopen_s(&KnotsUFile, fileName, "r");
@@ -263,13 +271,17 @@ void insertKnotsU(char **fileName){
 	int u = 0, v = 0, i = 0, y = 0;
 	char *nextToken = NULL;
 	while (fgets(line, line_size, KnotsUFile) != NULL)  {
-		printf("%.2f \n", atof(line));
+		//printf("%.2f \n", atof(line));
 		knotsU[i] = atof(line);
 		i++;
 	}
 	free(line);
 	fclose(KnotsUFile);
 }
+
+//////////////////////////////////
+/*	INSERT KNOTS V FROM FILE	*/
+//////////////////////////////////
 
 void insertKnotsV(char **fileName){
 	FILE *KnotsVFile;
@@ -279,20 +291,21 @@ void insertKnotsV(char **fileName){
 	int u = 0, v = 0, i = 0, y = 0;
 	char *nextToken = NULL;
 	while (fgets(line, line_size, KnotsVFile) != NULL)  {
-		printf("%.2f \n", atof(line));
+		//printf("%.2f \n", atof(line));
 		knotsV[i] = atof(line);
 		i++;
 	}
 	free(line);
 	fclose(KnotsVFile);
 }
+
 //////////////////////
 /*	MAIN FUNCTION	*/
 //////////////////////
 
 int main(int argc, char *argv[]){
 
-	printf("Number of arguments: %d", argc);
+	printf("Number of arguments: %d \n", argc);
 	int i = 1;
 	for (i; i < argc; i++){
 		printf("arg%d=%s \n",i,argv[i]);		
