@@ -7,42 +7,32 @@
 /*	VARIABLES	*/
 //////////////////
 
-struct Surface
-{
-	GLfloat pts[4][4][3];
-	GLfloat knotsU[8];
-	GLfloat knotsV[8];
-	GLfloat weights[16];
-};
-
-#define OBSERWATOR_FOV_Y    30.0  
-#define X_OFFSET_SWIATLO    10
-#define Y_OFFSET_SWIATLO    120
+#define OBSERWATOR_FOV_Y        30.0  
 
 double maxDepth = 1000;
 double minDepth = 1;
-struct Surface surfaces[5];
 
-int windowWidth = 1024;
-int windowHeight = 768;
-int	numberOfSurfaces = 0;
+int     windowWidth = 1024;
+int     windowHeight = 768;
+
 
 GLfloat depth = 50.0;
 GLfloat positionZ = 0.0;
 GLfloat positionY = 20.0;
 GLfloat positionX = 20.0;
 
+GLfloat knotsU[8] = { 0.0, 0.0, 0.0, 0.0, 0.8, 0.8, 0.8, 0.8 };
+GLfloat knotsV[8] = { 0.0, 0.0, 0.0, 0.0, 0.8, 0.8, 0.8, 0.8 };
+GLfloat pts1[4][4][3];
+GLfloat pts2[4][4][3];
 GLUnurbsObj *nurb;
 int u, v;
-int i, j, k;
-////////////////////////////////////////////////////////////////////////
 
 //////////////////////////
 /*	DRAW AXIS FUNCTION	*/
 //////////////////////////
 
-void DrawAxis()
-{
+void DrawAxis(){
 	glLineWidth(1.0f);
 	glBegin(GL_LINES);
 
@@ -70,8 +60,7 @@ void DrawAxis()
 /*	WINDOW RESIZE FUNCTION	*/
 //////////////////////////////
 
-void WindowResize(int width, int height)
-{
+void WindowResize(int width, int height){
 	windowWidth = width;
 	windowHeight = height;
 
@@ -86,59 +75,70 @@ void WindowResize(int width, int height)
 /*	CALCULATE POINTS IF NOT INCLUDED */
 ///////////////////////////////////////
 
-void CalculatePoints()
-{
-	for (u = 0; u<4; u++) 
-	{
-		for (v = 0; v<4; v++) 
-		{
-			surfaces[0].pts[u][v][0] = 2.0*((GLfloat)u);
-			surfaces[0].pts[u][v][1] = 2.0*((GLfloat)v);
+void CalculatePoints(){
+	for (u = 0; u<4; u++) {
+		for (v = 0; v<4; v++) {
+			pts1[u][v][0] = 2.0*((GLfloat)u);
+			pts1[u][v][1] = 2.0*((GLfloat)v);
 			if ((u == 1 || u == 2) && (v == 1 || v == 2))
-				surfaces[0].pts[u][v][2] = 6.0;
+				pts1[u][v][2] = 6.0;
 			else
-				surfaces[0].pts[u][v][2] = 0.0;
+				pts1[u][v][2] = 0.0;
 		}
 	}
-	surfaces[0].pts[3][3][2] = 6;
-	surfaces[0].pts[0][0][2] = 1;
+	pts1[3][3][2] = 6;
+	pts1[0][0][2] = 1;
 }
 
 //////////////////////////////////
 /*	NURBS ALGORITHM FUNCTION	*/
 //////////////////////////////////
 
-void DrawNurbs()
-{
+void DrawNurbs(){
 
 	glColor3f(1.0, 1.0, 1.0);
-	//glEnable(GL_LIGHT0);
-	//glEnable(GL_LIGHTING);
 	//glEnable(GL_LIGHT0);
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_AUTO_NORMAL);
 	glEnable(GL_NORMALIZE);
 	nurb = gluNewNurbsRenderer();
-	gluNurbsProperty(nurb, GLU_SAMPLING_TOLERANCE, 10.0);
-	gluNurbsProperty(nurb, GLU_DISPLAY_MODE, GLU_FILL);	
-	//gluNurbsProperty(nurb, GLU_DISPLAY_MODE, GLU_FILL);	
-	//gluNurbsProperty(nurb, GLU_DISPLAY_MODE, GLU_OUTLINE_PATCH);	
-
+	gluNurbsProperty(nurb, GLU_SAMPLING_TOLERANCE, 25.0);
+	gluNurbsProperty(nurb, GLU_DISPLAY_MODE, GLU_OUTLINE_POLYGON);	
 
 	glMatrixMode(GL_PROJECTION);
 	glMatrixMode(GL_MODELVIEW);
 
-	for (i = 0; i < numberOfSurfaces; i++)
-	{
-		gluBeginSurface(nurb);
-		gluNurbsSurface(nurb, 8, surfaces[i].knotsU, 8, surfaces[i].knotsV,
-			4 * 3, 3, &surfaces[i].pts[0][0][0],
-			4, 4, GL_MAP2_VERTEX_3);
-		gluEndSurface(nurb);
-	}
-	
-}
+	/*
+	pts2[0][0][0] = 2.0f;
+	pts2[0][0][1] = 2.0f;
+	pts2[0][0][2] = 0.0f;
 
+	pts2[0][1][0] = 2.0f;
+	pts2[0][1][1] = 2.0f;
+	pts2[0][1][2] = 4.0f;
+
+	pts2[1][0][0] = 3.0f;
+	pts2[1][0][1] = 1.0f;
+	pts2[1][0][2] = 0.0f;
+
+	pts2[1][1][0] = 3.0f;
+	pts2[1][1][1] = 1.0f;
+	pts2[1][1][2] = 4.0f;
+	*/
+
+
+
+
+
+
+
+	gluBeginSurface(nurb);
+	gluNurbsSurface(nurb, 8, knotsU, 8, knotsV,
+		4 * 3, 3, &pts2[0][0][0],
+		4, 4, GL_MAP2_VERTEX_3);
+	gluEndSurface(nurb);
+
+}
 
 //////////////////////////////////////
 /*	KEYBOARD SPECIAL KEYS FUNCTION	*/
@@ -175,8 +175,7 @@ void KeyboardSpecialKeys(int key, int x, int y){
 /*	KEYBOARD KEYS FUNCTION	*/
 //////////////////////////////
 
-void KeyboardKeys(unsigned char key, int x, int y)
-{
+void KeyboardKeys(unsigned char key, int x, int y){
 	switch (key)
 	{
 
@@ -205,74 +204,11 @@ void KeyboardKeys(unsigned char key, int x, int y)
 
 }
 
-/*void UstawKolorPozycji(int m, int indeks)
-{
-	if (m == menu)
-	if ((m == ID_MENU_SWIATLA) && (indeks == sIndeks)
-		|| (m == ID_MENU_MATERIALU) && (indeks == mIndeks))
-
-		// Pozycja podswietlona wyswietlana jest w kolkorze zoltym
-		glColor3f(1.0, 1.0, 0.0);
-	else
-
-		// Pozostale na bialo
-		glColor3f(1.0, 1.0, 1.0);
-}
-*/
-
-void RysujTekstRastrowy(void *font, char *tekst)
-{
-	for (i = 0; i < (int)strlen(tekst); i++)
-		glutBitmapCharacter(font, tekst[i]);
-}
-
-void RysujNakladke(void)
-{
-	char buf[255];
-
-	// Zmiana typu rzutu z perspektywicznego na ortogonalny
-	glMatrixMode(GL_PROJECTION);
-	glPushMatrix();
-	glLoadIdentity();
-	glOrtho(0.0, windowWidth, 0.0, windowHeight, -100.0, 100.0);
-
-	// Modelowanie sceny 2D (zawartosci nakladki)
-	glMatrixMode(GL_MODELVIEW);
-	glPushMatrix();
-	glLoadIdentity();
-
-	// Okreslenie koloru tekstu
-	glColor3f(1.0, 1.0, 1.0);
-
-	// RYSOWANIE MENU PARAMETROW ZRODLA SWIATLA
-	sprintf_s(buf,255, "Swiatlo");
-	glRasterPos2i(X_OFFSET_SWIATLO, Y_OFFSET_SWIATLO);
-	RysujTekstRastrowy(GLUT_BITMAP_8_BY_13, buf);
-
-	//UstawKolorPozycji(ID_MENU_SWIATLA, 0);
-	sprintf_s(buf,255, " - otaczajace  ");
-	glRasterPos2i(X_OFFSET_SWIATLO, Y_OFFSET_SWIATLO - 10);
-	RysujTekstRastrowy(GLUT_BITMAP_8_BY_13, buf);
-
-	//UstawKolorPozycji(ID_MENU_SWIATLA, 1);
-	sprintf_s(buf,255, " - rozproszone ");
-	glRasterPos2i(X_OFFSET_SWIATLO, Y_OFFSET_SWIATLO - 20);
-	RysujTekstRastrowy(GLUT_BITMAP_8_BY_13, buf);
-
-	// Przywrocenie macierzy sprzed wywolania funkcji
-	glMatrixMode(GL_PROJECTION);
-	glPopMatrix();
-	glMatrixMode(GL_MODELVIEW);
-	glPopMatrix();
-
-}
-
 //////////////////////////
 /*	DISPLAY FUNCTION	*/
 //////////////////////////
 
-void Display(void)
-{
+void Display(void){
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	glMatrixMode(GL_MODELVIEW);
@@ -287,9 +223,116 @@ void Display(void)
 	DrawAxis();
 	
 	DrawNurbs();
+	/*
+	glColor3f(1.0f, 1.0f, 1.0f);
+	glBegin(GL_LINES);
+	glVertex3f(0.0f, 0.0f, 1.0f);
+	glVertex3f(0.0f, 2.0f, 0.0f);
+	glEnd();
 
-	RysujNakladke();
+	glBegin(GL_LINES);
+	glVertex3f(0.0f, 2.0f, 0.0f);
+	glVertex3f(0.0f, 4.0f, 0.0f);
+	glEnd();
 
+	glBegin(GL_LINES);
+	glVertex3f(0.0f, 4.0f, 0.0f);
+	glVertex3f(0.0f, 6.0f, 0.0f);
+	glEnd();
+
+	glBegin(GL_LINES);
+	glVertex3f(0.0f, 6.0f, 0.0f);
+	glVertex3f(2.0f, 0.0f, 0.0f);
+	glEnd();
+
+	glBegin(GL_LINES);
+	glVertex3f(2.0f, 0.0f, 0.0f);
+	glVertex3f(2.0f, 2.0f, 6.0f);
+	glEnd();
+
+	glBegin(GL_LINES);
+	glVertex3f(2.0f, 2.0f, 6.0f);
+	glVertex3f(2.0f, 4.0f, 6.0f);
+	glEnd();
+
+	glBegin(GL_LINES);
+	glVertex3f(2.0f, 4.0f, 6.0f);
+	glVertex3f(2.0f, 6.0f, 0.0f);
+	glEnd();
+
+	glBegin(GL_LINES);
+	glVertex3f(2.0f, 6.0f, 0.0f);
+	glVertex3f(4.0f, 0.0f, 0.0f);
+	glEnd();
+
+	glBegin(GL_LINES);
+	glVertex3f(4.0f, 0.0f, 0.0f);
+	glVertex3f(4.0f, 2.0f, 6.0f);
+	glEnd();
+
+	glBegin(GL_LINES);
+	glVertex3f(4.0f, 2.0f, 6.0f);
+	glVertex3f(4.0f, 4.0f, 6.0f);
+	glEnd();
+
+	glBegin(GL_LINES);
+	glVertex3f(4.0f, 4.0f, 6.0f);
+	glVertex3f(4.0f, 6.0f, 0.0f);
+	glEnd();
+
+	glBegin(GL_LINES);
+	glVertex3f(4.0f, 4.0f, 6.0f);
+	glVertex3f(4.0f, 6.0f, 0.0f);
+	glEnd();
+
+	glBegin(GL_LINES);
+	glVertex3f(4.0f, 6.0f, 6.0f);
+	glVertex3f(6.0f, 0.0f, 0.0f);
+	glEnd();
+
+	glBegin(GL_LINES);
+	glVertex3f(6.0f, 0.0f, 0.0f);
+	glVertex3f(6.0f, 2.0f, 0.0f);
+	glEnd();
+
+	glBegin(GL_LINES);
+	glVertex3f(6.0f, 2.0f, 0.0f);
+	glVertex3f(6.0f, 4.0f, 0.0f);
+	glEnd();
+
+	glBegin(GL_LINES);
+	glVertex3f(6.0f, 4.0f, 0.0f);
+	glVertex3f(6.0f, 6.0f, 6.0f);
+	glEnd();
+	*/
+	/*
+	glBegin(GL_POINTS);
+	glColor3f(1.0f, 1.0f, 1.0f);
+
+	glVertex3f(0.0f, 0.0f, 1.0f);
+	glVertex3f(0.0f, 2.0f, 0.0f);
+	glVertex3f(0.0f, 4.0f, 0.0f);
+
+	glVertex3f(0.0f, 6.0f, 0.0f);
+	glVertex3f(2.0f, 0.0f, 0.0f);
+	glVertex3f(2.0f, 2.0f, 6.0f);
+
+	glVertex3f(2.0f, 4.0f, 6.0f);
+	glVertex3f(2.0f, 6.0f, 0.0f);
+	glVertex3f(4.0f, 0.0f, 0.0f);
+
+	glVertex3f(4.0f, 2.0f, 6.0f);
+	glVertex3f(4.0f, 4.0f, 6.0f);
+	glVertex3f(4.0f, 6.0f, 0.0f);
+
+	glVertex3f(6.0f, 0.0f, 0.0f);
+	glVertex3f(6.0f, 2.0f, 6.0f);
+	glVertex3f(6.0f, 4.0f, 0.0f);
+
+	glVertex3f(6.0f, 6.0f, 6.0f);
+
+	glEnd();
+	*/
 	glutSwapBuffers();
 }
 
@@ -297,39 +340,30 @@ void Display(void)
 /*	LOAD POINTS FROM FILE	*/
 //////////////////////////////
 
-void insertPoints(char **fileName)
-{
+void insertPoints(char **fileName){
 	FILE *pointsFile;
 	fopen_s(&pointsFile,fileName, "r");
 	const size_t line_size = 300;
 	char* line = malloc(line_size);
 	char separator[] = " ,;";
 	char *tmp;
-	int u = 0, v = 0;
-	i = 0, j = 0;
+	int u = 0, v = 0, i = 0;
 	char *nextToken = NULL;
-	while (fgets(line, line_size, pointsFile) != NULL)  
-	{
+	while (fgets(line, line_size, pointsFile) != NULL)  {
 			tmp = strtok_s(line, separator, &nextToken);
-			while (tmp != NULL)
-			{
-				surfaces[j].pts[u][v][i] = atof(tmp);				
+			while (tmp != NULL){
+				pts1[u][v][i] = atof(tmp);
 				//printf("pts[%d][%d][%d] : %.2f", u, v, i, pts1[u][v][i]);
 				tmp = strtok_s(NULL, separator, &nextToken);
 				i++;
-				if (i == 3)
-				{
+				if (i == 3){
 					i = 0;
 					v++;
-					if (v == 4)
-					{
+					if (v == 4){
 						u++;
 						v = 0;
 						if (u == 4)
-						{
 							u = 0;
-							j++;
-						}							
 					}
 				}
 			}
@@ -342,35 +376,22 @@ void insertPoints(char **fileName)
 /*	INSERT WEIGHTS OF POINTS FROM FILE	*/
 //////////////////////////////////////////
 
-void insertWeights(char **fileName)
-{
+void insertWeights(char **fileName){
 	FILE *weightsFile;
 	fopen_s(&weightsFile, fileName, "r");
 	const size_t line_size = 300;
 	char* line = malloc(line_size);
-	int u = 0, v = 0, y = 0;
-	i = 0,j = 0,k = 0;
-	while (fgets(line, line_size, weightsFile) != NULL)  
-	{
+	int u = 0, v = 0, i = 0, y = 0;
+	while (fgets(line, line_size, weightsFile) != NULL)  {
 		//printf("%.2f \n", atof(line));
-		surfaces[j].weights[k] = atof(line);
-
-		for (i = 0; i < 3; i++)			
-			surfaces[j].pts[u][v][i] *= surfaces[j].weights[k];
-
-		k++;
+		for (i = 0; i < 3;i++)
+			pts1[u][v][i] = pts1[u][v][i] * atof(line);
 		v++;
-		if (v == 4)
-		{
+		if (v == 4){
 			u++;
 			v = 0;
 			if (u == 4)
-			{
 				u = 0;
-				j++;
-				k = 0;
-			}
-				
 		}
 	}
 	free(line);
@@ -386,19 +407,12 @@ void insertKnotsU(char **fileName){
 	fopen_s(&KnotsUFile, fileName, "r");
 	const size_t line_size = 300;
 	char* line = malloc(line_size);
-	int u = 0, v = 0, y = 0;
-	i = 0, j = 0;
+	int u = 0, v = 0, i = 0, y = 0;
 	char *nextToken = NULL;
-	while (fgets(line, line_size, KnotsUFile) != NULL)  
-	{
+	while (fgets(line, line_size, KnotsUFile) != NULL)  {
 		//printf("%.2f \n", atof(line));
-		surfaces[j].knotsU[i] = atof(line);
+		knotsU[i] = atof(line);
 		i++;
-		if (i == 8)
-		{
-			j++;
-			i = 0;
-		}			
 	}
 	free(line);
 	fclose(KnotsUFile);
@@ -413,18 +427,12 @@ void insertKnotsV(char **fileName){
 	fopen_s(&KnotsVFile, fileName, "r");
 	const size_t line_size = 300;
 	char* line = malloc(line_size);
-	int u = 0, v = 0, y = 0;
-	i = 0, j = 0;
+	int u = 0, v = 0, i = 0, y = 0;
 	char *nextToken = NULL;
-	while (fgets(line, line_size, KnotsVFile) != NULL)  
-	{
-		surfaces[j].knotsV[i] = atof(line);
+	while (fgets(line, line_size, KnotsVFile) != NULL)  {
+		//printf("%.2f \n", atof(line));
+		knotsV[i] = atof(line);
 		i++;
-		if (i == 8)
-		{
-			j++;
-			i = 0;
-		}
 	}
 	free(line);
 	fclose(KnotsVFile);
@@ -436,51 +444,31 @@ void insertKnotsV(char **fileName){
 
 int main(int argc, char *argv[]){
 
-	printf("Number of arguments: %d \n", argc);	
-	for (i = 1; i < argc; i++){
+	printf("Number of arguments: %d \n", argc);
+	int i = 1;
+	for (i; i < argc; i++){
 		printf("arg%d=%s \n",i,argv[i]);		
 	}
-
-	if (argc > 5){
-		numberOfSurfaces = atoi(argv[1]);
-		if (numberOfSurfaces > 5)
-			numberOfSurfaces = 5;
-		insertPoints(argv[2]);
-		insertWeights(argv[3]);
-		insertKnotsU(argv[4]);
-		insertKnotsV(argv[5]);
-	}
+	if (argc > 1)
+		insertPoints(argv[1]);
 	else
-		printf_s("Not enough arguments !\n");
+		CalculatePoints();
+	if (argc > 2)
+		insertWeights(argv[2]);
+	if (argc > 3)
+		insertKnotsU(argv[3]);
+	if (argc > 4)
+		insertKnotsV(argv[4]);
 
-	// TESTOWANIE DANYCH
-	//int x = 1;
-	/*
-	for (i = 0; i < numberOfSurfaces; i++){
-		for (j = 0; j < 4; j++){
-			for (k = 0; k < 4; k++){
-				printf("%d %.2f %.2f %.2f \n",x, surfaces[i].pts[j][k][0], surfaces[i].pts[j][k][1], surfaces[i].pts[j][k][2]);
-				x++;
-			}
+	for (u = 0; u < 4; u++){
+		for (v = 0; v < 4; v++){
+			pts2[u][v][0] = pts1[u][v][0];
+			pts2[u][v][1] = pts1[u][v][1];
+			pts2[u][v][2] = pts1[u][v][2];
 		}
 	}
-	*/
-	/*
-	for (i = 0; i < numberOfSurfaces; i++){
-		for (j = 0; j < 16; j++){
-				printf("%d %.2f \n", x, surfaces[i].weights[j]);
-				x++;
-		}
-	}
-	*/
-	/*
-	for (i = 0; i < numberOfSurfaces; i++){
-		for (j = 0; j < 8; j++){
-			printf("%d %.2f \n", x, surfaces[i].knotsV[j]);
-			x++;
-		}
-	}
-	*/
+
+
 	char *myargv[1];
 	int myargc = 1;
 	myargv[0] =_strdup("NURBS");
