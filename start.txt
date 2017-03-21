@@ -1,0 +1,5 @@
+1 //liczba powierzchni
+points.txt //plik z punktami kontrolnymi
+weights.txt //plik z wagami punktów kontrolnych
+knotsu.txt //plik z wêz³ami U
+knotsv.txt //plik z wêz³ami V
