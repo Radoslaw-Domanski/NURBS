@@ -17,14 +17,32 @@ struct Surface
 
 #define OBSERWATOR_FOV_Y    30.0  
 #define X_OFFSET_SWIATLO    10
-#define Y_OFFSET_SWIATLO    120
+#define Y_OFFSET_SWIATLO    700
+const int stepValue = 20;
 
+char buf[255];
+GLfloat Rtlo = 0.00f;
+GLfloat Gtlo = 0.00f;
+GLfloat Btlo = 0.00f;
+float Robiekt = 1.00f;
+float Gobiekt = 1.00f;
+float Bobiekt = 1.00f;
+float SamplingTolerance = 10.0;
+int valDisplayMode = 0;
+char *DisplayMode = "GLU_FILL";
+char axes = '1';
+char menu = '1';
+char obiekt = '1';
+char tlo = '0';
+int ogolne = 0;
+int podswietlenie = 0;
+int podswietlenie2 = 0;
 double maxDepth = 1000;
 double minDepth = 1;
 struct Surface surfaces[5];
-
 int windowWidth = 1024;
 int windowHeight = 768;
+float aspect = (float)(1024/768);
 int	numberOfSurfaces = 0;
 
 GLfloat depth = 50.0;
@@ -72,14 +90,30 @@ void DrawAxis()
 
 void WindowResize(int width, int height)
 {
+	
 	windowWidth = width;
 	windowHeight = height;
 
-	glViewport(0, 0, windowWidth, windowHeight);
-
+	glViewport((float)(width/height), 0, windowWidth, windowHeight);
+	
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
 	gluPerspective(OBSERWATOR_FOV_Y, (float)windowWidth / (float)windowHeight, 1.0, 1000.0);
+	
+	/*
+	glMatrixMode(GL_PROJECTION);
+	windowWidth = width;
+	windowHeight = height;
+	glLoadIdentity();
+	aspect = (float)(width / height);
+	int w = height * aspect;           // w is width adjusted for aspect ratio
+	int left = (width - w) / 2;
+	glViewport(left, 0, w, height);       // fix up the viewport to maintain aspect ratio
+	gluOrtho2D(0, windowWidth, windowHeight, 0);   // only the window is changing, not the camera
+	glMatrixMode(GL_MODELVIEW);
+
+	glutPostRedisplay();
+	*/
 }
 
 ///////////////////////////////////////
@@ -110,8 +144,8 @@ void CalculatePoints()
 
 void DrawNurbs()
 {
-
-	glColor3f(1.0, 1.0, 1.0);
+	glClearColor(Rtlo,Gtlo,Btlo, 0.0f);
+	glColor3f(Robiekt,Gobiekt,Bobiekt);
 	//glEnable(GL_LIGHT0);
 	//glEnable(GL_LIGHTING);
 	//glEnable(GL_LIGHT0);
@@ -119,10 +153,19 @@ void DrawNurbs()
 	glEnable(GL_AUTO_NORMAL);
 	glEnable(GL_NORMALIZE);
 	nurb = gluNewNurbsRenderer();
-	gluNurbsProperty(nurb, GLU_SAMPLING_TOLERANCE, 10.0);
-	gluNurbsProperty(nurb, GLU_DISPLAY_MODE, GLU_FILL);	
-	//gluNurbsProperty(nurb, GLU_DISPLAY_MODE, GLU_FILL);	
-	//gluNurbsProperty(nurb, GLU_DISPLAY_MODE, GLU_OUTLINE_PATCH);	
+
+	gluNurbsProperty(nurb, GLU_SAMPLING_TOLERANCE, SamplingTolerance);
+
+	if (valDisplayMode == 0)
+		gluNurbsProperty(nurb, GLU_DISPLAY_MODE, GLU_FILL);	
+	else if (valDisplayMode == 1)
+		gluNurbsProperty(nurb, GLU_DISPLAY_MODE, GLU_OUTLINE_POLYGON);
+	else if (valDisplayMode == 2)
+		gluNurbsProperty(nurb, GLU_DISPLAY_MODE, GLU_OUTLINE_PATCH);
+
+	//gluNurbsProperty(nurb, GLU_NURBS_MODE, GLU_OUTLINE_PATCH);
+	//gluNurbsProperty(nurb, GLU_AUTO, GLU_PARAMETRIC_ERROR);
+
 
 
 	glMatrixMode(GL_PROJECTION);
@@ -166,8 +209,38 @@ void KeyboardSpecialKeys(int key, int x, int y){
 		if (positionY < 360) positionY += 1.0;
 		else positionY = 0;
 		break;
-	}
 
+	case GLUT_KEY_F1:
+		if (menu == '1')
+			menu = '0';
+		else menu = '1';
+		break;
+	
+	case GLUT_KEY_F2:
+		if (axes == '1')
+			axes = '0';
+		else axes = '1';
+		break;
+
+	case GLUT_KEY_F3:
+		ogolne++;
+		if (ogolne == 3)
+			ogolne = 0;
+		break;
+
+	/*case GLUT_KEY_F4:
+		if (tlo == '1' && ogolne == '0')
+		{
+			ogolne = '1';
+			tlo == '0';
+		}
+		else if (tlo == '0' && ogolne == '1')
+		{
+			ogolne = '0';
+			tlo == '1';
+		}
+		break;*/
+	}
 
 }
 
@@ -198,6 +271,204 @@ void KeyboardKeys(unsigned char key, int x, int y)
 		depth = (depth > minDepth) ? depth - 1.0 : depth;
 		break;
 
+	case 'k':
+		if (ogolne == 1)
+		{
+			if (podswietlenie < 13)
+				podswietlenie++;
+		}
+		else if (ogolne == 2){
+			if (podswietlenie2 < 13)
+				podswietlenie2++;
+		}
+		break;
+
+	case 'i':
+		if (podswietlenie > 0)
+			podswietlenie--;
+		if (ogolne == 1)
+		{
+			if (podswietlenie > 0)
+				podswietlenie--;
+		}
+		else if (ogolne == 2){
+			if (podswietlenie2 > 0)
+				podswietlenie2--;
+		}
+		break;
+
+	case 'l':
+		if (ogolne == 1)
+		{
+			if (podswietlenie == 1)
+			{
+				if (Rtlo < 1.0f)
+				{
+					Rtlo += 0.01f;
+					if (Rtlo > 1.0f)
+						Rtlo = 1.0f;
+				}
+			}
+			else if (podswietlenie == 2)
+			{
+				if (Gtlo < 1.0f)
+				{
+					Gtlo += 0.01f;
+					if (Gtlo > 1.0f)
+						Gtlo = 1.0f;
+				}
+			}
+			else if (podswietlenie == 3)
+			{
+				if (Btlo < 1.0f)
+				{
+					Btlo += 0.01f;
+					if (Btlo > 1.0f)
+						Btlo = 1.0f;
+				}
+			}
+			else if (podswietlenie == 5)
+			{
+				if (Robiekt < 1.0f)
+				{
+					Robiekt += 0.01f;
+					if (Robiekt > 1.0f)
+						Robiekt = 1.0f;
+				}
+			}
+			else if (podswietlenie == 6)
+			{
+				if (Gobiekt < 1.0f)
+				{
+					Gobiekt += 0.01f;
+					if (Gobiekt > 1.0f)
+						Gobiekt = 1.0f;
+				}
+			}
+			else if (podswietlenie == 7)
+			{
+				if (Bobiekt < 1.0f)
+				{
+					Bobiekt += 0.01f;
+					if (Bobiekt > 1.0f)
+						Bobiekt = 1.0f;
+				}
+			}
+			// AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+			/*else if (podswietlenie == 9)
+			{
+				if (SamplingTolerance < 50.00f)
+					SamplingTolerance += 1.00f;
+				else
+					SamplingTolerance = 50.00f;
+			}
+			else if (podswietlenie == 11)
+			{
+				if (valDisplayMode == 0)
+				{
+					valDisplayMode++;
+					DisplayMode = "GLU_OUTLINE_POLYGON";
+				}
+				else if (valDisplayMode == 1)
+				{
+					valDisplayMode++;
+					DisplayMode = "GLU_OUTLINE_PATCH";
+				}
+				else if (valDisplayMode == 2){
+					valDisplayMode = 0;
+					DisplayMode = "GLU_FILL";
+				}
+			}*/
+
+		}
+		break;
+
+	case 'j':
+		if (ogolne == 1)
+		{
+			if (podswietlenie == 1)
+			{
+				if (Rtlo > 0.00f)
+				{
+					Rtlo -= 0.01f;
+					if (Rtlo < 0.00f)
+						Rtlo = 0.00f;
+				}
+			}
+			else if (podswietlenie == 2)
+			{
+				if (Gtlo > 0.00f)
+				{
+					Gtlo -= 0.01f;
+					if (Gtlo < 0.00f)
+						Gtlo = 0.00f;
+				}
+			}
+			else if (podswietlenie == 3)
+			{
+				if (Btlo > 0.00f)
+				{
+					Btlo -= 0.01f;
+					if (Btlo < 0.00f)
+						Btlo = 0.00f;
+				}
+			}
+			else if (podswietlenie == 5)
+			{
+				if (Robiekt > 0.00f)
+				{
+					Robiekt -= 0.01f;
+					if (Robiekt < 0.00f)
+						Robiekt = 0.00f;
+				}
+			}
+			else if (podswietlenie == 6)
+			{
+				if (Gobiekt > 0.00f)
+				{
+					Gobiekt -= 0.01f;
+					if (Gobiekt < 0.00f)
+						Gobiekt = 0.00f;
+				}
+			}
+			else if (podswietlenie == 7)
+			{
+				if (Bobiekt > 0.00f)
+				{
+					Bobiekt -= 0.01f;
+					if (Bobiekt < 0.00f)
+						Bobiekt = 0.00f;
+				}
+			}
+			// AAAAAAAAAAAAAAAAAAAAAAAAAA
+			/*else if (podswietlenie == 9)
+			{
+				if (SamplingTolerance > 1.00f)
+					SamplingTolerance -= 1.00f;
+				else
+					SamplingTolerance = 1.00f;
+			}
+			else if (podswietlenie == 11)
+			{
+				if (valDisplayMode == 0)
+				{
+					valDisplayMode = 2;
+					DisplayMode = "GLU_OUTLINE_PATCH";
+				}
+				else if (valDisplayMode == 1)
+				{
+					valDisplayMode--;
+					DisplayMode = "GLU_FILL";
+				}
+				else if (valDisplayMode == 2){
+					valDisplayMode--;
+					DisplayMode = "GLU_OUTLINE_POLYGON";
+				}
+			}*/
+
+		}
+		break;
+
 	}
 
 	if (key == 27)
@@ -208,8 +479,8 @@ void KeyboardKeys(unsigned char key, int x, int y)
 /*void UstawKolorPozycji(int m, int indeks)
 {
 	if (m == menu)
-	if ((m == ID_MENU_SWIATLA) && (indeks == sIndeks)
-		|| (m == ID_MENU_MATERIALU) && (indeks == mIndeks))
+	if ((m == ID_menu_SWIATLA) && (indeks == sIndeks)
+		|| (m == ID_menu_MATERIALU) && (indeks == mIndeks))
 
 		// Pozycja podswietlona wyswietlana jest w kolkorze zoltym
 		glColor3f(1.0, 1.0, 0.0);
@@ -226,9 +497,235 @@ void RysujTekstRastrowy(void *font, char *tekst)
 		glutBitmapCharacter(font, tekst[i]);
 }
 
+void IfChoosen(int x){
+	if (podswietlenie == x)
+		glColor3f(1.0, 0.0, 0.0);
+	else glColor3f(1.0, 1.0, 1.0);
+}
+
+void IfChoosen2(int x){
+	if (podswietlenie2 == x)
+		glColor3f(1.0, 0.0, 0.0);
+	else glColor3f(1.0, 1.0, 1.0);
+}
+
+void DrawOgolne(){	
+	int step = 1;
+	
+	/*IfChoosen(0);
+	sprintf_s(buf, 255, "F4  - tlo");
+	glRasterPos2i(X_OFFSET_SWIATLO, Y_OFFSET_SWIATLO - (step++*stepValue));
+	RysujTekstRastrowy(GLUT_BITMAP_8_BY_13, buf);
+	*/
+	sprintf_s(buf, 255, "F1  - widocznosc menu");
+	glRasterPos2i(X_OFFSET_SWIATLO, Y_OFFSET_SWIATLO - (step++*stepValue));
+	RysujTekstRastrowy(GLUT_BITMAP_8_BY_13, buf);
+
+	sprintf_s(buf, 255, "F2  - widocznosc osi");
+	glRasterPos2i(X_OFFSET_SWIATLO, Y_OFFSET_SWIATLO - (step++*stepValue));
+	RysujTekstRastrowy(GLUT_BITMAP_8_BY_13, buf);
+
+	sprintf_s(buf, 255, "F3  - zmiana menu");
+	glRasterPos2i(X_OFFSET_SWIATLO, Y_OFFSET_SWIATLO - (step++*stepValue));
+	RysujTekstRastrowy(GLUT_BITMAP_8_BY_13, buf);
+
+	sprintf_s(buf, 255, "+/- - przyblizenie");
+	glRasterPos2i(X_OFFSET_SWIATLO, Y_OFFSET_SWIATLO - (step++*stepValue));
+	RysujTekstRastrowy(GLUT_BITMAP_8_BY_13, buf);
+
+	sprintf_s(buf, 255, "GORA/DOL - obrot wzgledem osi X");
+	glRasterPos2i(X_OFFSET_SWIATLO, Y_OFFSET_SWIATLO - (step++*stepValue));
+	RysujTekstRastrowy(GLUT_BITMAP_8_BY_13, buf);
+
+	sprintf_s(buf, 255, "LEWO/PRAWO - obrot wzgledem osi Y");
+	glRasterPos2i(X_OFFSET_SWIATLO, Y_OFFSET_SWIATLO - (step++*stepValue));
+	RysujTekstRastrowy(GLUT_BITMAP_8_BY_13, buf);
+
+	sprintf_s(buf, 255, "GWIAZDKA/SLASH - obrot wzgledem osi Z");
+	glRasterPos2i(X_OFFSET_SWIATLO, Y_OFFSET_SWIATLO - (step++*stepValue));
+	RysujTekstRastrowy(GLUT_BITMAP_8_BY_13, buf);
+
+	sprintf_s(buf, 255, "I/K/J/L - nawigacja w menu");
+	glRasterPos2i(X_OFFSET_SWIATLO, Y_OFFSET_SWIATLO - (step++*stepValue));
+	RysujTekstRastrowy(GLUT_BITMAP_8_BY_13, buf);
+
+}
+
+void DrawTlo(){
+	int step = 1;
+
+	IfChoosen(0);
+	sprintf_s(buf, 255, "Kolor tla");
+	glRasterPos2i(X_OFFSET_SWIATLO, Y_OFFSET_SWIATLO - (step++*stepValue));
+	RysujTekstRastrowy(GLUT_BITMAP_8_BY_13, buf);
+
+	IfChoosen(1);
+	sprintf_s(buf, 255, "    R = %.2f", Rtlo);
+	glRasterPos2i(X_OFFSET_SWIATLO, Y_OFFSET_SWIATLO - (step++*stepValue));
+	RysujTekstRastrowy(GLUT_BITMAP_8_BY_13, buf);
+
+	IfChoosen(2);
+	sprintf_s(buf, 255, "    G = %.2f", Gtlo);
+	glRasterPos2i(X_OFFSET_SWIATLO, Y_OFFSET_SWIATLO - (step++*stepValue));
+	RysujTekstRastrowy(GLUT_BITMAP_8_BY_13, buf);
+
+	IfChoosen(3);
+	sprintf_s(buf, 255, "    B = %.2f", Btlo);
+	glRasterPos2i(X_OFFSET_SWIATLO, Y_OFFSET_SWIATLO - (step++*stepValue));
+	RysujTekstRastrowy(GLUT_BITMAP_8_BY_13, buf);
+
+	IfChoosen(4);
+	sprintf_s(buf, 255, "Kolor obiektu");
+	glRasterPos2i(X_OFFSET_SWIATLO, Y_OFFSET_SWIATLO - (step++*stepValue));
+	RysujTekstRastrowy(GLUT_BITMAP_8_BY_13, buf);
+
+	IfChoosen(5);
+	sprintf_s(buf, 255, "    R = %.2f", Robiekt);
+	glRasterPos2i(X_OFFSET_SWIATLO, Y_OFFSET_SWIATLO - (step++*stepValue));
+	RysujTekstRastrowy(GLUT_BITMAP_8_BY_13, buf);
+
+	IfChoosen(6);
+	sprintf_s(buf, 255, "    G = %.2f", Gobiekt);
+	glRasterPos2i(X_OFFSET_SWIATLO, Y_OFFSET_SWIATLO - (step++*stepValue));
+	RysujTekstRastrowy(GLUT_BITMAP_8_BY_13, buf);
+
+	IfChoosen(7);
+	sprintf_s(buf, 255, "    B = %.2f", Bobiekt);
+	glRasterPos2i(X_OFFSET_SWIATLO, Y_OFFSET_SWIATLO - (step++*stepValue));
+	RysujTekstRastrowy(GLUT_BITMAP_8_BY_13, buf);
+
+	IfChoosen(8);
+	sprintf_s(buf, 255, "Liczba modelowanych powierzchni");
+	glRasterPos2i(X_OFFSET_SWIATLO, Y_OFFSET_SWIATLO - (step++*stepValue));
+	RysujTekstRastrowy(GLUT_BITMAP_8_BY_13, buf);
+
+	IfChoosen(9);
+	sprintf_s(buf, 255, "    %d", numberOfSurfaces);
+	glRasterPos2i(X_OFFSET_SWIATLO, Y_OFFSET_SWIATLO - (step++*stepValue));
+	RysujTekstRastrowy(GLUT_BITMAP_8_BY_13, buf);
+
+	/*IfChoosen(8);
+	sprintf_s(buf, 255, "Tolerancja probkowania");
+	glRasterPos2i(X_OFFSET_SWIATLO, Y_OFFSET_SWIATLO - (step++*stepValue));
+	RysujTekstRastrowy(GLUT_BITMAP_8_BY_13, buf);
+
+	IfChoosen(9);
+	sprintf_s(buf, 255, "    %.2f", SamplingTolerance);
+	glRasterPos2i(X_OFFSET_SWIATLO, Y_OFFSET_SWIATLO - (step++*stepValue));
+	RysujTekstRastrowy(GLUT_BITMAP_8_BY_13, buf);
+
+	IfChoosen(10);
+	sprintf_s(buf, 255, "Tryb wyswietlania");
+	glRasterPos2i(X_OFFSET_SWIATLO, Y_OFFSET_SWIATLO - (step++*stepValue));
+	RysujTekstRastrowy(GLUT_BITMAP_8_BY_13, buf);
+
+	IfChoosen(11);
+	sprintf_s(buf, 255, "    %s", DisplayMode);
+	glRasterPos2i(X_OFFSET_SWIATLO, Y_OFFSET_SWIATLO - (step++*stepValue));
+	RysujTekstRastrowy(GLUT_BITMAP_8_BY_13, buf);
+	*/
+	/*
+	IfChoosen(8);
+	sprintf_s(buf, 255, "Rozdzielczosc ekranu");
+	glRasterPos2i(X_OFFSET_SWIATLO, Y_OFFSET_SWIATLO - (step++*stepValue));
+	RysujTekstRastrowy(GLUT_BITMAP_8_BY_13, buf);
+
+	IfChoosen(9);
+	sprintf_s(buf, 255, "    %s", rozdzielczosc);
+	glRasterPos2i(X_OFFSET_SWIATLO, Y_OFFSET_SWIATLO - (step++*stepValue));
+	RysujTekstRastrowy(GLUT_BITMAP_8_BY_13, buf);
+	*/
+}
+
+
+void DrawSzczegolowe(){
+	int step = 1;
+
+	IfChoosen2(0);
+	sprintf_s(buf, 255, "GLU_SAMPLING_METHOD");
+	glRasterPos2i(X_OFFSET_SWIATLO, Y_OFFSET_SWIATLO - (step++*stepValue));
+	RysujTekstRastrowy(GLUT_BITMAP_8_BY_13, buf);
+
+	IfChoosen2(1);
+	sprintf_s(buf, 255, "    ASDF");
+	glRasterPos2i(X_OFFSET_SWIATLO, Y_OFFSET_SWIATLO - (step++*stepValue));
+	RysujTekstRastrowy(GLUT_BITMAP_8_BY_13, buf);
+
+	IfChoosen2(2);
+	sprintf_s(buf, 255, "GLU_SAMPLING_TOLERANCE");
+	glRasterPos2i(X_OFFSET_SWIATLO, Y_OFFSET_SWIATLO - (step++*stepValue));
+	RysujTekstRastrowy(GLUT_BITMAP_8_BY_13, buf);
+
+	IfChoosen2(3);
+	sprintf_s(buf, 255, "    ASDF");
+	glRasterPos2i(X_OFFSET_SWIATLO, Y_OFFSET_SWIATLO - (step++*stepValue));
+	RysujTekstRastrowy(GLUT_BITMAP_8_BY_13, buf);
+
+	IfChoosen2(4);
+	sprintf_s(buf, 255, "GLU_PARAMETRIC_TOLERANCE");
+	glRasterPos2i(X_OFFSET_SWIATLO, Y_OFFSET_SWIATLO - (step++*stepValue));
+	RysujTekstRastrowy(GLUT_BITMAP_8_BY_13, buf);
+
+	IfChoosen2(5);
+	sprintf_s(buf, 255, "    ASDF");
+	glRasterPos2i(X_OFFSET_SWIATLO, Y_OFFSET_SWIATLO - (step++*stepValue));
+	RysujTekstRastrowy(GLUT_BITMAP_8_BY_13, buf);
+
+	IfChoosen2(6);
+	sprintf_s(buf, 255, "GLU_U_STEP");
+	glRasterPos2i(X_OFFSET_SWIATLO, Y_OFFSET_SWIATLO - (step++*stepValue));
+	RysujTekstRastrowy(GLUT_BITMAP_8_BY_13, buf);
+
+	IfChoosen2(7);
+	sprintf_s(buf, 255, "    ASDF");
+	glRasterPos2i(X_OFFSET_SWIATLO, Y_OFFSET_SWIATLO - (step++*stepValue));
+	RysujTekstRastrowy(GLUT_BITMAP_8_BY_13, buf);
+
+	IfChoosen2(8);
+	sprintf_s(buf, 255, "GLU_V_STEP");
+	glRasterPos2i(X_OFFSET_SWIATLO, Y_OFFSET_SWIATLO - (step++*stepValue));
+	RysujTekstRastrowy(GLUT_BITMAP_8_BY_13, buf);
+
+	IfChoosen2(9);
+	sprintf_s(buf, 255, "    ASDF");
+	glRasterPos2i(X_OFFSET_SWIATLO, Y_OFFSET_SWIATLO - (step++*stepValue));
+	RysujTekstRastrowy(GLUT_BITMAP_8_BY_13, buf);
+
+	IfChoosen2(10);
+	sprintf_s(buf, 255, "GLU_CULLING");
+	glRasterPos2i(X_OFFSET_SWIATLO, Y_OFFSET_SWIATLO - (step++*stepValue));
+	RysujTekstRastrowy(GLUT_BITMAP_8_BY_13, buf);
+
+	IfChoosen2(11);
+	sprintf_s(buf, 255, "    ASDF");
+	glRasterPos2i(X_OFFSET_SWIATLO, Y_OFFSET_SWIATLO - (step++*stepValue));
+	RysujTekstRastrowy(GLUT_BITMAP_8_BY_13, buf);
+
+	IfChoosen2(12);
+	sprintf_s(buf, 255, "GLU_AUTO_LOAD_MATRIX");
+	glRasterPos2i(X_OFFSET_SWIATLO, Y_OFFSET_SWIATLO - (step++*stepValue));
+	RysujTekstRastrowy(GLUT_BITMAP_8_BY_13, buf);
+
+	IfChoosen2(13);
+	sprintf_s(buf, 255, "    ASDF");
+	glRasterPos2i(X_OFFSET_SWIATLO, Y_OFFSET_SWIATLO - (step++*stepValue));
+	RysujTekstRastrowy(GLUT_BITMAP_8_BY_13, buf);
+
+	/*
+	IfChoosen(8);
+	sprintf_s(buf, 255, "Rozdzielczosc ekranu");
+	glRasterPos2i(X_OFFSET_SWIATLO, Y_OFFSET_SWIATLO - (step++*stepValue));
+	RysujTekstRastrowy(GLUT_BITMAP_8_BY_13, buf);
+
+	IfChoosen(9);
+	sprintf_s(buf, 255, "    %s", rozdzielczosc);
+	glRasterPos2i(X_OFFSET_SWIATLO, Y_OFFSET_SWIATLO - (step++*stepValue));
+	RysujTekstRastrowy(GLUT_BITMAP_8_BY_13, buf);
+	*/
+}
+
 void RysujNakladke(void)
 {
-	char buf[255];
 
 	// Zmiana typu rzutu z perspektywicznego na ortogonalny
 	glMatrixMode(GL_PROJECTION);
@@ -244,21 +741,13 @@ void RysujNakladke(void)
 	// Okreslenie koloru tekstu
 	glColor3f(1.0, 1.0, 1.0);
 
-	// RYSOWANIE MENU PARAMETROW ZRODLA SWIATLA
-	sprintf_s(buf,255, "Swiatlo");
-	glRasterPos2i(X_OFFSET_SWIATLO, Y_OFFSET_SWIATLO);
-	RysujTekstRastrowy(GLUT_BITMAP_8_BY_13, buf);
-
-	//UstawKolorPozycji(ID_MENU_SWIATLA, 0);
-	sprintf_s(buf,255, " - otaczajace  ");
-	glRasterPos2i(X_OFFSET_SWIATLO, Y_OFFSET_SWIATLO - 10);
-	RysujTekstRastrowy(GLUT_BITMAP_8_BY_13, buf);
-
-	//UstawKolorPozycji(ID_MENU_SWIATLA, 1);
-	sprintf_s(buf,255, " - rozproszone ");
-	glRasterPos2i(X_OFFSET_SWIATLO, Y_OFFSET_SWIATLO - 20);
-	RysujTekstRastrowy(GLUT_BITMAP_8_BY_13, buf);
-
+	if (ogolne == 1)
+		DrawTlo();
+	else if (ogolne == 2)
+		DrawSzczegolowe();
+	else
+		DrawOgolne();
+	
 	// Przywrocenie macierzy sprzed wywolania funkcji
 	glMatrixMode(GL_PROJECTION);
 	glPopMatrix();
@@ -284,11 +773,13 @@ void Display(void)
 	glRotatef(positionY, 0, 1, 0);
 	glRotatef(positionZ, 0, 0, 1);
 
-	DrawAxis();
+	if (axes == '1')
+		DrawAxis();
 	
 	DrawNurbs();
 
-	RysujNakladke();
+	if (menu == '1')
+		RysujNakladke();
 
 	glutSwapBuffers();
 }
@@ -313,8 +804,7 @@ void insertPoints(char **fileName)
 			tmp = strtok_s(line, separator, &nextToken);
 			while (tmp != NULL)
 			{
-				surfaces[j].pts[u][v][i] = atof(tmp);				
-				//printf("pts[%d][%d][%d] : %.2f", u, v, i, pts1[u][v][i]);
+				surfaces[j].pts[u][v][i] = atof(tmp);
 				tmp = strtok_s(NULL, separator, &nextToken);
 				i++;
 				if (i == 3)
@@ -352,7 +842,6 @@ void insertWeights(char **fileName)
 	i = 0,j = 0,k = 0;
 	while (fgets(line, line_size, weightsFile) != NULL)  
 	{
-		//printf("%.2f \n", atof(line));
 		surfaces[j].weights[k] = atof(line);
 
 		for (i = 0; i < 3; i++)			
@@ -391,7 +880,6 @@ void insertKnotsU(char **fileName){
 	char *nextToken = NULL;
 	while (fgets(line, line_size, KnotsUFile) != NULL)  
 	{
-		//printf("%.2f \n", atof(line));
 		surfaces[j].knotsU[i] = atof(line);
 		i++;
 		if (i == 8)
@@ -494,14 +982,12 @@ int main(int argc, char *argv[]){
 	glutInitWindowSize(windowWidth, windowHeight);
 
 	glutCreateWindow("NURBS");
-	// full screen mode
-	//glutFullScreen();
 
 	glEnable(GL_DEPTH_TEST);
 
 	glClearDepth(1000.0);
 
-	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+	glClearColor(Rtlo, Gtlo, Btlo, 0.0f);
 
 	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
