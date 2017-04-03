@@ -28,8 +28,17 @@ float Robiekt = 1.00f;
 float Gobiekt = 1.00f;
 float Bobiekt = 1.00f;
 float SamplingTolerance = 10.0;
+int UStep = 100;
+int VStep = 100;
+int valCulling = 0;
+char *Culling = "FALSE";
+int valAutoLoadMatrix = 1;
+char *AutoLoadMatrix = "TRUE";
 int valDisplayMode = 0;
 char *DisplayMode = "GLU_FILL";
+int valSamplingMethod = 0;
+char *SamplingMethod = "GLU_PATH_LENGTH";
+float ParametricTolerance = 0.5f;
 char axes = '1';
 char menu = '1';
 char obiekt = '1';
@@ -42,8 +51,8 @@ double minDepth = 1;
 struct Surface surfaces[5];
 int windowWidth = 1024;
 int windowHeight = 768;
-float aspect = (float)(1024/768);
 int	numberOfSurfaces = 0;
+int currentSurfaces = 0;
 
 GLfloat depth = 50.0;
 GLfloat positionZ = 0.0;
@@ -153,25 +162,46 @@ void DrawNurbs()
 	glEnable(GL_AUTO_NORMAL);
 	glEnable(GL_NORMALIZE);
 	nurb = gluNewNurbsRenderer();
-
+	// SAMPLING TOLERANCE
 	gluNurbsProperty(nurb, GLU_SAMPLING_TOLERANCE, SamplingTolerance);
-
+	// DISPLAY MODE
 	if (valDisplayMode == 0)
 		gluNurbsProperty(nurb, GLU_DISPLAY_MODE, GLU_FILL);	
 	else if (valDisplayMode == 1)
 		gluNurbsProperty(nurb, GLU_DISPLAY_MODE, GLU_OUTLINE_POLYGON);
 	else if (valDisplayMode == 2)
 		gluNurbsProperty(nurb, GLU_DISPLAY_MODE, GLU_OUTLINE_PATCH);
+	// SAMPLING METHOD
+	if (valSamplingMethod == 0)
+		gluNurbsProperty(nurb, GLU_SAMPLING_METHOD, GLU_PATH_LENGTH);
+	else if (valSamplingMethod == 1)
+		gluNurbsProperty(nurb, GLU_SAMPLING_METHOD, GLU_PARAMETRIC_ERROR);
+	else if (valSamplingMethod == 2)
+		gluNurbsProperty(nurb, GLU_SAMPLING_METHOD, GLU_DOMAIN_DISTANCE);
+	// PARAMETRIC TOLERANCE
+	gluNurbsProperty(nurb, GLU_PARAMETRIC_TOLERANCE, ParametricTolerance);
+	// U STEP
+	gluNurbsProperty(nurb, GLU_U_STEP, UStep);
+	// V STEP
+	gluNurbsProperty(nurb, GLU_V_STEP, VStep);
+	// CULLING
+	if (valCulling == 1)
+		gluNurbsProperty(nurb, GLU_CULLING, GL_TRUE);
+	else
+		gluNurbsProperty(nurb, GLU_CULLING, GL_FALSE);
+	// AUTO LAOD MATRIX
+	if (valAutoLoadMatrix == 1)
+		gluNurbsProperty(nurb, GLU_AUTO_LOAD_MATRIX, GL_TRUE);
+	else
+		gluNurbsProperty(nurb, GLU_AUTO_LOAD_MATRIX, GL_FALSE);
 
 	//gluNurbsProperty(nurb, GLU_NURBS_MODE, GLU_OUTLINE_PATCH);
 	//gluNurbsProperty(nurb, GLU_AUTO, GLU_PARAMETRIC_ERROR);
 
-
-
 	glMatrixMode(GL_PROJECTION);
 	glMatrixMode(GL_MODELVIEW);
 
-	for (i = 0; i < numberOfSurfaces; i++)
+	for (i = 0; i < currentSurfaces; i++)
 	{
 		gluBeginSurface(nurb);
 		gluNurbsSurface(nurb, 8, surfaces[i].knotsU, 8, surfaces[i].knotsV,
@@ -228,18 +258,6 @@ void KeyboardSpecialKeys(int key, int x, int y){
 			ogolne = 0;
 		break;
 
-	/*case GLUT_KEY_F4:
-		if (tlo == '1' && ogolne == '0')
-		{
-			ogolne = '1';
-			tlo == '0';
-		}
-		else if (tlo == '0' && ogolne == '1')
-		{
-			ogolne = '0';
-			tlo == '1';
-		}
-		break;*/
 	}
 
 }
@@ -274,11 +292,11 @@ void KeyboardKeys(unsigned char key, int x, int y)
 	case 'k':
 		if (ogolne == 1)
 		{
-			if (podswietlenie < 13)
+			if (podswietlenie < 9)
 				podswietlenie++;
 		}
 		else if (ogolne == 2){
-			if (podswietlenie2 < 13)
+			if (podswietlenie2 < 15)
 				podswietlenie2++;
 		}
 		break;
@@ -354,14 +372,15 @@ void KeyboardKeys(unsigned char key, int x, int y)
 						Bobiekt = 1.0f;
 				}
 			}
-			// AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
-			/*else if (podswietlenie == 9)
+			else if (podswietlenie == 9)
 			{
-				if (SamplingTolerance < 50.00f)
-					SamplingTolerance += 1.00f;
-				else
-					SamplingTolerance = 50.00f;
+				if (currentSurfaces < numberOfSurfaces)
+				{
+					currentSurfaces += 1;					
+				}
 			}
+			// AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+			/*
 			else if (podswietlenie == 11)
 			{
 				if (valDisplayMode == 0)
@@ -380,6 +399,96 @@ void KeyboardKeys(unsigned char key, int x, int y)
 				}
 			}*/
 
+		}
+		else if (ogolne == 2)
+		{
+			if (podswietlenie2 == 1)
+			{
+				valSamplingMethod++;
+				if (valSamplingMethod == 1)
+					SamplingMethod = "GLU_PARAMETRIC_ERROR";
+				else if (valSamplingMethod == 2)
+					SamplingMethod = "GLU_DOMAIN_DISTANCE";
+				else
+				{
+					valSamplingMethod = 0;
+					SamplingMethod = "GLU_PATH_LENGTH";
+				}
+			}
+			else if (podswietlenie2 == 3)
+			{
+				if (SamplingTolerance < 50.00f)
+					SamplingTolerance += 1.00f;
+				else
+					SamplingTolerance = 50.00f;
+			}
+			else if (podswietlenie2 == 5)
+			{
+				if (ParametricTolerance < 1.00f)
+					ParametricTolerance += 0.01f;
+				else
+					ParametricTolerance = 1.00f;
+			}
+			else if (podswietlenie2 == 7)
+			{
+				if (UStep < 200)
+					UStep += 1;
+				else
+					UStep = 200;
+			}
+			else if (podswietlenie2 == 9)
+			{
+				if (VStep < 200)
+					VStep += 1;
+				else
+					VStep = 200;
+			}
+			else if (podswietlenie2 == 11)
+			{
+				if (valCulling == 1)
+				{
+					valCulling = 0;
+					Culling = "FALSE";
+				}					
+				else
+				{
+					valCulling = 1;
+					Culling = "TRUE";
+				}
+					
+			}
+			else if (podswietlenie2 == 13)
+			{
+				if (valAutoLoadMatrix == 1)
+				{
+					valAutoLoadMatrix = 0;
+					AutoLoadMatrix = "FALSE";
+				}
+					
+				else
+				{					
+					valAutoLoadMatrix = 1;
+					AutoLoadMatrix = "TRUE";
+				}
+					
+			}
+			else if (podswietlenie2 == 15)
+			{
+				if (valDisplayMode == 0)
+				{
+					valDisplayMode++;
+					DisplayMode = "GLU_OUTLINE_POLYGON";
+				}
+				else if (valDisplayMode == 1)
+				{
+					valDisplayMode++;
+					DisplayMode = "GLU_OUTLINE_PATCH";
+				}
+				else if (valDisplayMode == 2){
+					valDisplayMode = 0;
+					DisplayMode = "GLU_FILL";
+				}
+			}
 		}
 		break;
 
@@ -440,14 +549,15 @@ void KeyboardKeys(unsigned char key, int x, int y)
 						Bobiekt = 0.00f;
 				}
 			}
-			// AAAAAAAAAAAAAAAAAAAAAAAAAA
-			/*else if (podswietlenie == 9)
+			else if (podswietlenie == 9)
 			{
-				if (SamplingTolerance > 1.00f)
-					SamplingTolerance -= 1.00f;
-				else
-					SamplingTolerance = 1.00f;
+				if (currentSurfaces > 0)
+				{
+					currentSurfaces -= 1;					
+				}
 			}
+			// AAAAAAAAAAAAAAAAAAAAAAAAAA
+			/*
 			else if (podswietlenie == 11)
 			{
 				if (valDisplayMode == 0)
@@ -467,29 +577,102 @@ void KeyboardKeys(unsigned char key, int x, int y)
 			}*/
 
 		}
+		else if (ogolne == 2)
+		{
+			if (podswietlenie2 == 1)
+			{
+				valSamplingMethod--;
+				if (valSamplingMethod == 1)				
+					SamplingMethod = "GLU_PARAMETRIC_ERROR";				
+				else if (valSamplingMethod == 0)
+					SamplingMethod = "GLU_PATH_LENGTH";
+				else
+				{
+					SamplingMethod = "GLU_DOMAIN_DISTANCE";
+					valSamplingMethod = 2;
+				}					
+			}
+			else if (podswietlenie2 == 3)
+			{
+				if (SamplingTolerance > 1.00f)
+					SamplingTolerance -= 1.00f;
+				else
+					SamplingTolerance = 1.00f;
+			}
+			else if (podswietlenie2 == 5)
+			{
+				if (ParametricTolerance > 0.02f)
+					ParametricTolerance -= 0.01f;
+				else
+					ParametricTolerance = 0.01f;
+			}
+			else if (podswietlenie2 == 7)
+			{
+				if (UStep > 2)
+					UStep -= 1;
+				else
+					UStep = 1;
+			}
+			else if (podswietlenie2 == 9)
+			{
+				if (VStep > 2)
+					VStep -= 1;
+				else
+					VStep = 1;
+			}
+			else if (podswietlenie2 == 11)
+			{
+				if (valCulling == 1)
+				{
+					valCulling = 0;
+					Culling = "FALSE";
+				}
+				else
+				{
+					valCulling = 1;
+					Culling = "TRUE";
+				}
+					
+			}
+			else if (podswietlenie2 == 13)
+			{
+				if (valAutoLoadMatrix == 1)
+				{
+					valAutoLoadMatrix = 0;
+					AutoLoadMatrix = "FALSE";
+				}					
+				else
+				{
+					AutoLoadMatrix = "TRUE";
+					valAutoLoadMatrix = 1;
+				}
+					
+			}
+			else if (podswietlenie2 == 15)
+			{
+				if (valDisplayMode == 0)
+				{
+					valDisplayMode = 2;
+					DisplayMode = "GLU_OUTLINE_PATCH";
+				}
+				else if (valDisplayMode == 1)
+				{
+					valDisplayMode--;
+					DisplayMode = "GLU_FILL";
+				}
+				else if (valDisplayMode == 2){
+					valDisplayMode--;
+					DisplayMode = "GLU_OUTLINE_POLYGON";
+				}
+			}
+		}
 		break;
-
 	}
-
+	// ESC
 	if (key == 27)
 		exit(0);
 
 }
-
-/*void UstawKolorPozycji(int m, int indeks)
-{
-	if (m == menu)
-	if ((m == ID_menu_SWIATLA) && (indeks == sIndeks)
-		|| (m == ID_menu_MATERIALU) && (indeks == mIndeks))
-
-		// Pozycja podswietlona wyswietlana jest w kolkorze zoltym
-		glColor3f(1.0, 1.0, 0.0);
-	else
-
-		// Pozostale na bialo
-		glColor3f(1.0, 1.0, 1.0);
-}
-*/
 
 void RysujTekstRastrowy(void *font, char *tekst)
 {
@@ -512,11 +695,6 @@ void IfChoosen2(int x){
 void DrawOgolne(){	
 	int step = 1;
 	
-	/*IfChoosen(0);
-	sprintf_s(buf, 255, "F4  - tlo");
-	glRasterPos2i(X_OFFSET_SWIATLO, Y_OFFSET_SWIATLO - (step++*stepValue));
-	RysujTekstRastrowy(GLUT_BITMAP_8_BY_13, buf);
-	*/
 	sprintf_s(buf, 255, "F1  - widocznosc menu");
 	glRasterPos2i(X_OFFSET_SWIATLO, Y_OFFSET_SWIATLO - (step++*stepValue));
 	RysujTekstRastrowy(GLUT_BITMAP_8_BY_13, buf);
@@ -600,41 +778,10 @@ void DrawTlo(){
 	RysujTekstRastrowy(GLUT_BITMAP_8_BY_13, buf);
 
 	IfChoosen(9);
-	sprintf_s(buf, 255, "    %d", numberOfSurfaces);
+	sprintf_s(buf, 255, "    %d(%d)", currentSurfaces, numberOfSurfaces);
 	glRasterPos2i(X_OFFSET_SWIATLO, Y_OFFSET_SWIATLO - (step++*stepValue));
 	RysujTekstRastrowy(GLUT_BITMAP_8_BY_13, buf);
 
-	/*IfChoosen(8);
-	sprintf_s(buf, 255, "Tolerancja probkowania");
-	glRasterPos2i(X_OFFSET_SWIATLO, Y_OFFSET_SWIATLO - (step++*stepValue));
-	RysujTekstRastrowy(GLUT_BITMAP_8_BY_13, buf);
-
-	IfChoosen(9);
-	sprintf_s(buf, 255, "    %.2f", SamplingTolerance);
-	glRasterPos2i(X_OFFSET_SWIATLO, Y_OFFSET_SWIATLO - (step++*stepValue));
-	RysujTekstRastrowy(GLUT_BITMAP_8_BY_13, buf);
-
-	IfChoosen(10);
-	sprintf_s(buf, 255, "Tryb wyswietlania");
-	glRasterPos2i(X_OFFSET_SWIATLO, Y_OFFSET_SWIATLO - (step++*stepValue));
-	RysujTekstRastrowy(GLUT_BITMAP_8_BY_13, buf);
-
-	IfChoosen(11);
-	sprintf_s(buf, 255, "    %s", DisplayMode);
-	glRasterPos2i(X_OFFSET_SWIATLO, Y_OFFSET_SWIATLO - (step++*stepValue));
-	RysujTekstRastrowy(GLUT_BITMAP_8_BY_13, buf);
-	*/
-	/*
-	IfChoosen(8);
-	sprintf_s(buf, 255, "Rozdzielczosc ekranu");
-	glRasterPos2i(X_OFFSET_SWIATLO, Y_OFFSET_SWIATLO - (step++*stepValue));
-	RysujTekstRastrowy(GLUT_BITMAP_8_BY_13, buf);
-
-	IfChoosen(9);
-	sprintf_s(buf, 255, "    %s", rozdzielczosc);
-	glRasterPos2i(X_OFFSET_SWIATLO, Y_OFFSET_SWIATLO - (step++*stepValue));
-	RysujTekstRastrowy(GLUT_BITMAP_8_BY_13, buf);
-	*/
 }
 
 
@@ -647,7 +794,7 @@ void DrawSzczegolowe(){
 	RysujTekstRastrowy(GLUT_BITMAP_8_BY_13, buf);
 
 	IfChoosen2(1);
-	sprintf_s(buf, 255, "    ASDF");
+	sprintf_s(buf, 255, "    %s", SamplingMethod);
 	glRasterPos2i(X_OFFSET_SWIATLO, Y_OFFSET_SWIATLO - (step++*stepValue));
 	RysujTekstRastrowy(GLUT_BITMAP_8_BY_13, buf);
 
@@ -657,7 +804,7 @@ void DrawSzczegolowe(){
 	RysujTekstRastrowy(GLUT_BITMAP_8_BY_13, buf);
 
 	IfChoosen2(3);
-	sprintf_s(buf, 255, "    ASDF");
+	sprintf_s(buf, 255, "    %.2f", SamplingTolerance);
 	glRasterPos2i(X_OFFSET_SWIATLO, Y_OFFSET_SWIATLO - (step++*stepValue));
 	RysujTekstRastrowy(GLUT_BITMAP_8_BY_13, buf);
 
@@ -667,7 +814,7 @@ void DrawSzczegolowe(){
 	RysujTekstRastrowy(GLUT_BITMAP_8_BY_13, buf);
 
 	IfChoosen2(5);
-	sprintf_s(buf, 255, "    ASDF");
+	sprintf_s(buf, 255, "    %.2f",ParametricTolerance);
 	glRasterPos2i(X_OFFSET_SWIATLO, Y_OFFSET_SWIATLO - (step++*stepValue));
 	RysujTekstRastrowy(GLUT_BITMAP_8_BY_13, buf);
 
@@ -677,7 +824,7 @@ void DrawSzczegolowe(){
 	RysujTekstRastrowy(GLUT_BITMAP_8_BY_13, buf);
 
 	IfChoosen2(7);
-	sprintf_s(buf, 255, "    ASDF");
+	sprintf_s(buf, 255, "    %d", UStep);
 	glRasterPos2i(X_OFFSET_SWIATLO, Y_OFFSET_SWIATLO - (step++*stepValue));
 	RysujTekstRastrowy(GLUT_BITMAP_8_BY_13, buf);
 
@@ -687,7 +834,7 @@ void DrawSzczegolowe(){
 	RysujTekstRastrowy(GLUT_BITMAP_8_BY_13, buf);
 
 	IfChoosen2(9);
-	sprintf_s(buf, 255, "    ASDF");
+	sprintf_s(buf, 255, "    %d", VStep);
 	glRasterPos2i(X_OFFSET_SWIATLO, Y_OFFSET_SWIATLO - (step++*stepValue));
 	RysujTekstRastrowy(GLUT_BITMAP_8_BY_13, buf);
 
@@ -697,7 +844,7 @@ void DrawSzczegolowe(){
 	RysujTekstRastrowy(GLUT_BITMAP_8_BY_13, buf);
 
 	IfChoosen2(11);
-	sprintf_s(buf, 255, "    ASDF");
+	sprintf_s(buf, 255, "    %s", Culling);
 	glRasterPos2i(X_OFFSET_SWIATLO, Y_OFFSET_SWIATLO - (step++*stepValue));
 	RysujTekstRastrowy(GLUT_BITMAP_8_BY_13, buf);
 
@@ -707,21 +854,20 @@ void DrawSzczegolowe(){
 	RysujTekstRastrowy(GLUT_BITMAP_8_BY_13, buf);
 
 	IfChoosen2(13);
-	sprintf_s(buf, 255, "    ASDF");
+	sprintf_s(buf, 255, "    %s", AutoLoadMatrix);
 	glRasterPos2i(X_OFFSET_SWIATLO, Y_OFFSET_SWIATLO - (step++*stepValue));
 	RysujTekstRastrowy(GLUT_BITMAP_8_BY_13, buf);
 
-	/*
-	IfChoosen(8);
-	sprintf_s(buf, 255, "Rozdzielczosc ekranu");
+	IfChoosen2(14);
+	sprintf_s(buf, 255, "GLU_DISPLAY_MODE");
 	glRasterPos2i(X_OFFSET_SWIATLO, Y_OFFSET_SWIATLO - (step++*stepValue));
 	RysujTekstRastrowy(GLUT_BITMAP_8_BY_13, buf);
 
-	IfChoosen(9);
-	sprintf_s(buf, 255, "    %s", rozdzielczosc);
+	IfChoosen2(15);
+	sprintf_s(buf, 255, "    %s", DisplayMode);
 	glRasterPos2i(X_OFFSET_SWIATLO, Y_OFFSET_SWIATLO - (step++*stepValue));
 	RysujTekstRastrowy(GLUT_BITMAP_8_BY_13, buf);
-	*/
+
 }
 
 void RysujNakladke(void)
@@ -940,7 +1086,7 @@ int main(int argc, char *argv[]){
 	}
 	else
 		printf_s("Not enough arguments !\n");
-
+	currentSurfaces = numberOfSurfaces;
 	// TESTOWANIE DANYCH
 	//int x = 1;
 	/*
