@@ -15,18 +15,18 @@ struct Surface
 	GLfloat weights[16];
 };
 
-#define OBSERWATOR_FOV_Y    30.0  
-#define X_OFFSET_SWIATLO    10
-#define Y_OFFSET_SWIATLO    700
+#define CAMERA_ANGLE    30.0  
+#define TEXT_POSITION_X    10
+#define TEXT_POSITION_Y    700
 const int stepValue = 20;
 
-char buf[255];
-GLfloat Rtlo = 0.00f;
-GLfloat Gtlo = 0.00f;
-GLfloat Btlo = 0.00f;
-float Robiekt = 1.00f;
-float Gobiekt = 1.00f;
-float Bobiekt = 1.00f;
+char buffer[255];
+GLfloat RBackground = 0.00f;
+GLfloat GBackground = 0.00f;
+GLfloat BBackground = 0.00f;
+float RObject = 1.00f;
+float GObject = 1.00f;
+float BObject = 1.00f;
 float SamplingTolerance = 10.0;
 int UStep = 100;
 int VStep = 100;
@@ -41,11 +41,11 @@ char *SamplingMethod = "GLU_PATH_LENGTH";
 float ParametricTolerance = 0.5f;
 char axes = '1';
 char menu = '1';
-char obiekt = '1';
-char tlo = '0';
-int ogolne = 0;
-int podswietlenie = 0;
-int podswietlenie2 = 0;
+char object = '1';
+char background = '0';
+int general = 0;
+int highlighted = 0;
+int highlighted2 = 0;
 double maxDepth = 1000;
 double minDepth = 1;
 struct Surface surfaces[5];
@@ -107,22 +107,8 @@ void WindowResize(int width, int height)
 	
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	gluPerspective(OBSERWATOR_FOV_Y, (float)windowWidth / (float)windowHeight, 1.0, 1000.0);
-	
-	/*
-	glMatrixMode(GL_PROJECTION);
-	windowWidth = width;
-	windowHeight = height;
-	glLoadIdentity();
-	aspect = (float)(width / height);
-	int w = height * aspect;           // w is width adjusted for aspect ratio
-	int left = (width - w) / 2;
-	glViewport(left, 0, w, height);       // fix up the viewport to maintain aspect ratio
-	gluOrtho2D(0, windowWidth, windowHeight, 0);   // only the window is changing, not the camera
-	glMatrixMode(GL_MODELVIEW);
+	gluPerspective(CAMERA_ANGLE, (float)windowWidth / (float)windowHeight, 1.0, 1000.0);
 
-	glutPostRedisplay();
-	*/
 }
 
 ///////////////////////////////////////
@@ -153,8 +139,8 @@ void CalculatePoints()
 
 void DrawNurbs()
 {
-	glClearColor(Rtlo,Gtlo,Btlo, 0.0f);
-	glColor3f(Robiekt,Gobiekt,Bobiekt);
+	glClearColor(RBackground,GBackground,BBackground, 0.0f);
+	glColor3f(RObject,GObject,BObject);
 	//glEnable(GL_LIGHT0);
 	//glEnable(GL_LIGHTING);
 	//glEnable(GL_LIGHT0);
@@ -218,8 +204,10 @@ void DrawNurbs()
 //////////////////////////////////////
 
 void KeyboardSpecialKeys(int key, int x, int y){
+
 	switch (key)
 	{
+
 	case GLUT_KEY_UP:
 		if (positionX < 360) positionX += 1.0;
 		else positionX = 0;
@@ -253,9 +241,9 @@ void KeyboardSpecialKeys(int key, int x, int y){
 		break;
 
 	case GLUT_KEY_F3:
-		ogolne++;
-		if (ogolne == 3)
-			ogolne = 0;
+		general++;
+		if (general == 3)
+			general = 0;
 		break;
 
 	}
@@ -290,119 +278,97 @@ void KeyboardKeys(unsigned char key, int x, int y)
 		break;
 
 	case 'k':
-		if (ogolne == 1)
+		if (general == 1)
 		{
-			if (podswietlenie < 9)
-				podswietlenie++;
+			if (highlighted < 9)
+				highlighted++;
 		}
-		else if (ogolne == 2){
-			if (podswietlenie2 < 15)
-				podswietlenie2++;
+		else if (general == 2){
+			if (highlighted2 < 15)
+				highlighted2++;
 		}
 		break;
 
-	case 'i':
-		if (podswietlenie > 0)
-			podswietlenie--;
-		if (ogolne == 1)
+	case 'i':		
+		if (general == 1)
 		{
-			if (podswietlenie > 0)
-				podswietlenie--;
+			if (highlighted > 0)
+				highlighted--;
 		}
-		else if (ogolne == 2){
-			if (podswietlenie2 > 0)
-				podswietlenie2--;
+		else if (general == 2){
+			if (highlighted2 > 0)
+				highlighted2--;
 		}
 		break;
 
 	case 'l':
-		if (ogolne == 1)
+		if (general == 1)
 		{
-			if (podswietlenie == 1)
+			if (highlighted == 1)
 			{
-				if (Rtlo < 1.0f)
+				if (RBackground < 1.0f)
 				{
-					Rtlo += 0.01f;
-					if (Rtlo > 1.0f)
-						Rtlo = 1.0f;
+					RBackground += 0.01f;
+					if (RBackground > 1.0f)
+						RBackground = 1.0f;
 				}
 			}
-			else if (podswietlenie == 2)
+			else if (highlighted == 2)
 			{
-				if (Gtlo < 1.0f)
+				if (GBackground < 1.0f)
 				{
-					Gtlo += 0.01f;
-					if (Gtlo > 1.0f)
-						Gtlo = 1.0f;
+					GBackground += 0.01f;
+					if (GBackground > 1.0f)
+						GBackground = 1.0f;
 				}
 			}
-			else if (podswietlenie == 3)
+			else if (highlighted == 3)
 			{
-				if (Btlo < 1.0f)
+				if (BBackground < 1.0f)
 				{
-					Btlo += 0.01f;
-					if (Btlo > 1.0f)
-						Btlo = 1.0f;
+					BBackground += 0.01f;
+					if (BBackground > 1.0f)
+						BBackground = 1.0f;
 				}
 			}
-			else if (podswietlenie == 5)
+			else if (highlighted == 5)
 			{
-				if (Robiekt < 1.0f)
+				if (RObject < 1.0f)
 				{
-					Robiekt += 0.01f;
-					if (Robiekt > 1.0f)
-						Robiekt = 1.0f;
+					RObject += 0.01f;
+					if (RObject > 1.0f)
+						RObject = 1.0f;
 				}
 			}
-			else if (podswietlenie == 6)
+			else if (highlighted == 6)
 			{
-				if (Gobiekt < 1.0f)
+				if (GObject < 1.0f)
 				{
-					Gobiekt += 0.01f;
-					if (Gobiekt > 1.0f)
-						Gobiekt = 1.0f;
+					GObject += 0.01f;
+					if (GObject > 1.0f)
+						GObject = 1.0f;
 				}
 			}
-			else if (podswietlenie == 7)
+			else if (highlighted == 7)
 			{
-				if (Bobiekt < 1.0f)
+				if (BObject < 1.0f)
 				{
-					Bobiekt += 0.01f;
-					if (Bobiekt > 1.0f)
-						Bobiekt = 1.0f;
+					BObject += 0.01f;
+					if (BObject > 1.0f)
+						BObject = 1.0f;
 				}
 			}
-			else if (podswietlenie == 9)
+			else if (highlighted == 9)
 			{
 				if (currentSurfaces < numberOfSurfaces)
 				{
 					currentSurfaces += 1;					
 				}
 			}
-			// AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
-			/*
-			else if (podswietlenie == 11)
-			{
-				if (valDisplayMode == 0)
-				{
-					valDisplayMode++;
-					DisplayMode = "GLU_OUTLINE_POLYGON";
-				}
-				else if (valDisplayMode == 1)
-				{
-					valDisplayMode++;
-					DisplayMode = "GLU_OUTLINE_PATCH";
-				}
-				else if (valDisplayMode == 2){
-					valDisplayMode = 0;
-					DisplayMode = "GLU_FILL";
-				}
-			}*/
-
 		}
-		else if (ogolne == 2)
+		else if (general == 2)
 		{
-			if (podswietlenie2 == 1)
+			if (highlighted2 == 1)
 			{
 				valSamplingMethod++;
 				if (valSamplingMethod == 1)
@@ -415,35 +381,35 @@ void KeyboardKeys(unsigned char key, int x, int y)
 					SamplingMethod = "GLU_PATH_LENGTH";
 				}
 			}
-			else if (podswietlenie2 == 3)
+			else if (highlighted2 == 3)
 			{
 				if (SamplingTolerance < 50.00f)
 					SamplingTolerance += 1.00f;
 				else
 					SamplingTolerance = 50.00f;
 			}
-			else if (podswietlenie2 == 5)
+			else if (highlighted2 == 5)
 			{
 				if (ParametricTolerance < 1.00f)
 					ParametricTolerance += 0.01f;
 				else
 					ParametricTolerance = 1.00f;
 			}
-			else if (podswietlenie2 == 7)
+			else if (highlighted2 == 7)
 			{
 				if (UStep < 200)
 					UStep += 1;
 				else
 					UStep = 200;
 			}
-			else if (podswietlenie2 == 9)
+			else if (highlighted2 == 9)
 			{
 				if (VStep < 200)
 					VStep += 1;
 				else
 					VStep = 200;
 			}
-			else if (podswietlenie2 == 11)
+			else if (highlighted2 == 11)
 			{
 				if (valCulling == 1)
 				{
@@ -457,7 +423,7 @@ void KeyboardKeys(unsigned char key, int x, int y)
 				}
 					
 			}
-			else if (podswietlenie2 == 13)
+			else if (highlighted2 == 13)
 			{
 				if (valAutoLoadMatrix == 1)
 				{
@@ -472,7 +438,7 @@ void KeyboardKeys(unsigned char key, int x, int y)
 				}
 					
 			}
-			else if (podswietlenie2 == 15)
+			else if (highlighted2 == 15)
 			{
 				if (valDisplayMode == 0)
 				{
@@ -493,93 +459,73 @@ void KeyboardKeys(unsigned char key, int x, int y)
 		break;
 
 	case 'j':
-		if (ogolne == 1)
+		if (general == 1)
 		{
-			if (podswietlenie == 1)
+			if (highlighted == 1)
 			{
-				if (Rtlo > 0.00f)
+				if (RBackground > 0.00f)
 				{
-					Rtlo -= 0.01f;
-					if (Rtlo < 0.00f)
-						Rtlo = 0.00f;
+					RBackground -= 0.01f;
+					if (RBackground < 0.00f)
+						RBackground = 0.00f;
 				}
 			}
-			else if (podswietlenie == 2)
+			else if (highlighted == 2)
 			{
-				if (Gtlo > 0.00f)
+				if (GBackground > 0.00f)
 				{
-					Gtlo -= 0.01f;
-					if (Gtlo < 0.00f)
-						Gtlo = 0.00f;
+					GBackground -= 0.01f;
+					if (GBackground < 0.00f)
+						GBackground = 0.00f;
 				}
 			}
-			else if (podswietlenie == 3)
+			else if (highlighted == 3)
 			{
-				if (Btlo > 0.00f)
+				if (BBackground > 0.00f)
 				{
-					Btlo -= 0.01f;
-					if (Btlo < 0.00f)
-						Btlo = 0.00f;
+					BBackground -= 0.01f;
+					if (BBackground < 0.00f)
+						BBackground = 0.00f;
 				}
 			}
-			else if (podswietlenie == 5)
+			else if (highlighted == 5)
 			{
-				if (Robiekt > 0.00f)
+				if (RObject > 0.00f)
 				{
-					Robiekt -= 0.01f;
-					if (Robiekt < 0.00f)
-						Robiekt = 0.00f;
+					RObject -= 0.01f;
+					if (RObject < 0.00f)
+						RObject = 0.00f;
 				}
 			}
-			else if (podswietlenie == 6)
+			else if (highlighted == 6)
 			{
-				if (Gobiekt > 0.00f)
+				if (GObject > 0.00f)
 				{
-					Gobiekt -= 0.01f;
-					if (Gobiekt < 0.00f)
-						Gobiekt = 0.00f;
+					GObject -= 0.01f;
+					if (GObject < 0.00f)
+						GObject = 0.00f;
 				}
 			}
-			else if (podswietlenie == 7)
+			else if (highlighted == 7)
 			{
-				if (Bobiekt > 0.00f)
+				if (BObject > 0.00f)
 				{
-					Bobiekt -= 0.01f;
-					if (Bobiekt < 0.00f)
-						Bobiekt = 0.00f;
+					BObject -= 0.01f;
+					if (BObject < 0.00f)
+						BObject = 0.00f;
 				}
 			}
-			else if (podswietlenie == 9)
+			else if (highlighted == 9)
 			{
 				if (currentSurfaces > 0)
 				{
 					currentSurfaces -= 1;					
 				}
 			}
-			// AAAAAAAAAAAAAAAAAAAAAAAAAA
-			/*
-			else if (podswietlenie == 11)
-			{
-				if (valDisplayMode == 0)
-				{
-					valDisplayMode = 2;
-					DisplayMode = "GLU_OUTLINE_PATCH";
-				}
-				else if (valDisplayMode == 1)
-				{
-					valDisplayMode--;
-					DisplayMode = "GLU_FILL";
-				}
-				else if (valDisplayMode == 2){
-					valDisplayMode--;
-					DisplayMode = "GLU_OUTLINE_POLYGON";
-				}
-			}*/
-
 		}
-		else if (ogolne == 2)
+		else if (general == 2)
 		{
-			if (podswietlenie2 == 1)
+			if (highlighted2 == 1)
 			{
 				valSamplingMethod--;
 				if (valSamplingMethod == 1)				
@@ -592,35 +538,35 @@ void KeyboardKeys(unsigned char key, int x, int y)
 					valSamplingMethod = 2;
 				}					
 			}
-			else if (podswietlenie2 == 3)
+			else if (highlighted2 == 3)
 			{
 				if (SamplingTolerance > 1.00f)
 					SamplingTolerance -= 1.00f;
 				else
 					SamplingTolerance = 1.00f;
 			}
-			else if (podswietlenie2 == 5)
+			else if (highlighted2 == 5)
 			{
 				if (ParametricTolerance > 0.02f)
 					ParametricTolerance -= 0.01f;
 				else
 					ParametricTolerance = 0.01f;
 			}
-			else if (podswietlenie2 == 7)
+			else if (highlighted2 == 7)
 			{
 				if (UStep > 2)
 					UStep -= 1;
 				else
 					UStep = 1;
 			}
-			else if (podswietlenie2 == 9)
+			else if (highlighted2 == 9)
 			{
 				if (VStep > 2)
 					VStep -= 1;
 				else
 					VStep = 1;
 			}
-			else if (podswietlenie2 == 11)
+			else if (highlighted2 == 11)
 			{
 				if (valCulling == 1)
 				{
@@ -634,7 +580,7 @@ void KeyboardKeys(unsigned char key, int x, int y)
 				}
 					
 			}
-			else if (podswietlenie2 == 13)
+			else if (highlighted2 == 13)
 			{
 				if (valAutoLoadMatrix == 1)
 				{
@@ -648,7 +594,7 @@ void KeyboardKeys(unsigned char key, int x, int y)
 				}
 					
 			}
-			else if (podswietlenie2 == 15)
+			else if (highlighted2 == 15)
 			{
 				if (valDisplayMode == 0)
 				{
@@ -668,209 +614,213 @@ void KeyboardKeys(unsigned char key, int x, int y)
 		}
 		break;
 	}
+
 	// ESC
 	if (key == 27)
 		exit(0);
 
 }
 
-void RysujTekstRastrowy(void *font, char *tekst)
+void DrawText(void *font, char *tekst)
 {
 	for (i = 0; i < (int)strlen(tekst); i++)
 		glutBitmapCharacter(font, tekst[i]);
 }
 
 void IfChoosen(int x){
-	if (podswietlenie == x)
+	if (highlighted == x)
 		glColor3f(1.0, 0.0, 0.0);
 	else glColor3f(1.0, 1.0, 1.0);
 }
 
 void IfChoosen2(int x){
-	if (podswietlenie2 == x)
+	if (highlighted2 == x)
 		glColor3f(1.0, 0.0, 0.0);
 	else glColor3f(1.0, 1.0, 1.0);
 }
 
-void DrawOgolne(){	
+void DrawGeneral(){	
 	int step = 1;
 	
-	sprintf_s(buf, 255, "F1  - widocznosc menu");
-	glRasterPos2i(X_OFFSET_SWIATLO, Y_OFFSET_SWIATLO - (step++*stepValue));
-	RysujTekstRastrowy(GLUT_BITMAP_8_BY_13, buf);
+	sprintf_s(buffer, 255, "F1  - widocznosc menu");
+	glRasterPos2i(TEXT_POSITION_X, TEXT_POSITION_Y - (step++*stepValue));
+	DrawText(GLUT_BITMAP_8_BY_13, buffer);
 
-	sprintf_s(buf, 255, "F2  - widocznosc osi");
-	glRasterPos2i(X_OFFSET_SWIATLO, Y_OFFSET_SWIATLO - (step++*stepValue));
-	RysujTekstRastrowy(GLUT_BITMAP_8_BY_13, buf);
+	sprintf_s(buffer, 255, "F2  - widocznosc osi");
+	glRasterPos2i(TEXT_POSITION_X, TEXT_POSITION_Y - (step++*stepValue));
+	DrawText(GLUT_BITMAP_8_BY_13, buffer);
 
-	sprintf_s(buf, 255, "F3  - zmiana menu");
-	glRasterPos2i(X_OFFSET_SWIATLO, Y_OFFSET_SWIATLO - (step++*stepValue));
-	RysujTekstRastrowy(GLUT_BITMAP_8_BY_13, buf);
+	sprintf_s(buffer, 255, "F3  - zmiana menu");
+	glRasterPos2i(TEXT_POSITION_X, TEXT_POSITION_Y - (step++*stepValue));
+	DrawText(GLUT_BITMAP_8_BY_13, buffer);
 
-	sprintf_s(buf, 255, "+/- - przyblizenie");
-	glRasterPos2i(X_OFFSET_SWIATLO, Y_OFFSET_SWIATLO - (step++*stepValue));
-	RysujTekstRastrowy(GLUT_BITMAP_8_BY_13, buf);
+	sprintf_s(buffer, 255, "+/- - zmiana przyblizenia");
+	glRasterPos2i(TEXT_POSITION_X, TEXT_POSITION_Y - (step++*stepValue));
+	DrawText(GLUT_BITMAP_8_BY_13, buffer);
 
-	sprintf_s(buf, 255, "GORA/DOL - obrot wzgledem osi X");
-	glRasterPos2i(X_OFFSET_SWIATLO, Y_OFFSET_SWIATLO - (step++*stepValue));
-	RysujTekstRastrowy(GLUT_BITMAP_8_BY_13, buf);
+	sprintf_s(buffer, 255, "GORA/DOL - obrot wzgledem osi X");
+	glRasterPos2i(TEXT_POSITION_X, TEXT_POSITION_Y - (step++*stepValue));
+	DrawText(GLUT_BITMAP_8_BY_13, buffer);
 
-	sprintf_s(buf, 255, "LEWO/PRAWO - obrot wzgledem osi Y");
-	glRasterPos2i(X_OFFSET_SWIATLO, Y_OFFSET_SWIATLO - (step++*stepValue));
-	RysujTekstRastrowy(GLUT_BITMAP_8_BY_13, buf);
+	sprintf_s(buffer, 255, "LEWO/PRAWO - obrot wzgledem osi Y");
+	glRasterPos2i(TEXT_POSITION_X, TEXT_POSITION_Y - (step++*stepValue));
+	DrawText(GLUT_BITMAP_8_BY_13, buffer);
 
-	sprintf_s(buf, 255, "GWIAZDKA/SLASH - obrot wzgledem osi Z");
-	glRasterPos2i(X_OFFSET_SWIATLO, Y_OFFSET_SWIATLO - (step++*stepValue));
-	RysujTekstRastrowy(GLUT_BITMAP_8_BY_13, buf);
+	sprintf_s(buffer, 255, "GWIAZDKA/SLASH - obrot wzgledem osi Z");
+	glRasterPos2i(TEXT_POSITION_X, TEXT_POSITION_Y - (step++*stepValue));
+	DrawText(GLUT_BITMAP_8_BY_13, buffer);
 
-	sprintf_s(buf, 255, "I/K/J/L - nawigacja w menu");
-	glRasterPos2i(X_OFFSET_SWIATLO, Y_OFFSET_SWIATLO - (step++*stepValue));
-	RysujTekstRastrowy(GLUT_BITMAP_8_BY_13, buf);
+	sprintf_s(buffer, 255, "I/K  - nawigacja w menu");
+	glRasterPos2i(TEXT_POSITION_X, TEXT_POSITION_Y - (step++*stepValue));
+	DrawText(GLUT_BITMAP_8_BY_13, buffer);
 
+	sprintf_s(buffer, 255, "J/L - zmiana wartosci w menu");
+	glRasterPos2i(TEXT_POSITION_X, TEXT_POSITION_Y - (step++*stepValue));
+	DrawText(GLUT_BITMAP_8_BY_13, buffer);
 }
 
-void DrawTlo(){
+void DrawBackground(){
 	int step = 1;
 
 	IfChoosen(0);
-	sprintf_s(buf, 255, "Kolor tla");
-	glRasterPos2i(X_OFFSET_SWIATLO, Y_OFFSET_SWIATLO - (step++*stepValue));
-	RysujTekstRastrowy(GLUT_BITMAP_8_BY_13, buf);
+	sprintf_s(buffer, 255, "Kolor tla");
+	glRasterPos2i(TEXT_POSITION_X, TEXT_POSITION_Y - (step++*stepValue));
+	DrawText(GLUT_BITMAP_8_BY_13, buffer);
 
 	IfChoosen(1);
-	sprintf_s(buf, 255, "    R = %.2f", Rtlo);
-	glRasterPos2i(X_OFFSET_SWIATLO, Y_OFFSET_SWIATLO - (step++*stepValue));
-	RysujTekstRastrowy(GLUT_BITMAP_8_BY_13, buf);
+	sprintf_s(buffer, 255, "    R = %.2f", RBackground);
+	glRasterPos2i(TEXT_POSITION_X, TEXT_POSITION_Y - (step++*stepValue));
+	DrawText(GLUT_BITMAP_8_BY_13, buffer);
 
 	IfChoosen(2);
-	sprintf_s(buf, 255, "    G = %.2f", Gtlo);
-	glRasterPos2i(X_OFFSET_SWIATLO, Y_OFFSET_SWIATLO - (step++*stepValue));
-	RysujTekstRastrowy(GLUT_BITMAP_8_BY_13, buf);
+	sprintf_s(buffer, 255, "    G = %.2f", GBackground);
+	glRasterPos2i(TEXT_POSITION_X, TEXT_POSITION_Y - (step++*stepValue));
+	DrawText(GLUT_BITMAP_8_BY_13, buffer);
 
 	IfChoosen(3);
-	sprintf_s(buf, 255, "    B = %.2f", Btlo);
-	glRasterPos2i(X_OFFSET_SWIATLO, Y_OFFSET_SWIATLO - (step++*stepValue));
-	RysujTekstRastrowy(GLUT_BITMAP_8_BY_13, buf);
+	sprintf_s(buffer, 255, "    B = %.2f", BBackground);
+	glRasterPos2i(TEXT_POSITION_X, TEXT_POSITION_Y - (step++*stepValue));
+	DrawText(GLUT_BITMAP_8_BY_13, buffer);
 
 	IfChoosen(4);
-	sprintf_s(buf, 255, "Kolor obiektu");
-	glRasterPos2i(X_OFFSET_SWIATLO, Y_OFFSET_SWIATLO - (step++*stepValue));
-	RysujTekstRastrowy(GLUT_BITMAP_8_BY_13, buf);
+	sprintf_s(buffer, 255, "Kolor objectu");
+	glRasterPos2i(TEXT_POSITION_X, TEXT_POSITION_Y - (step++*stepValue));
+	DrawText(GLUT_BITMAP_8_BY_13, buffer);
 
 	IfChoosen(5);
-	sprintf_s(buf, 255, "    R = %.2f", Robiekt);
-	glRasterPos2i(X_OFFSET_SWIATLO, Y_OFFSET_SWIATLO - (step++*stepValue));
-	RysujTekstRastrowy(GLUT_BITMAP_8_BY_13, buf);
+	sprintf_s(buffer, 255, "    R = %.2f", RObject);
+	glRasterPos2i(TEXT_POSITION_X, TEXT_POSITION_Y - (step++*stepValue));
+	DrawText(GLUT_BITMAP_8_BY_13, buffer);
 
 	IfChoosen(6);
-	sprintf_s(buf, 255, "    G = %.2f", Gobiekt);
-	glRasterPos2i(X_OFFSET_SWIATLO, Y_OFFSET_SWIATLO - (step++*stepValue));
-	RysujTekstRastrowy(GLUT_BITMAP_8_BY_13, buf);
+	sprintf_s(buffer, 255, "    G = %.2f", GObject);
+	glRasterPos2i(TEXT_POSITION_X, TEXT_POSITION_Y - (step++*stepValue));
+	DrawText(GLUT_BITMAP_8_BY_13, buffer);
 
 	IfChoosen(7);
-	sprintf_s(buf, 255, "    B = %.2f", Bobiekt);
-	glRasterPos2i(X_OFFSET_SWIATLO, Y_OFFSET_SWIATLO - (step++*stepValue));
-	RysujTekstRastrowy(GLUT_BITMAP_8_BY_13, buf);
+	sprintf_s(buffer, 255, "    B = %.2f", BObject);
+	glRasterPos2i(TEXT_POSITION_X, TEXT_POSITION_Y - (step++*stepValue));
+	DrawText(GLUT_BITMAP_8_BY_13, buffer);
 
 	IfChoosen(8);
-	sprintf_s(buf, 255, "Liczba modelowanych powierzchni");
-	glRasterPos2i(X_OFFSET_SWIATLO, Y_OFFSET_SWIATLO - (step++*stepValue));
-	RysujTekstRastrowy(GLUT_BITMAP_8_BY_13, buf);
+	sprintf_s(buffer, 255, "Liczba modelowanych powierzchni");
+	glRasterPos2i(TEXT_POSITION_X, TEXT_POSITION_Y - (step++*stepValue));
+	DrawText(GLUT_BITMAP_8_BY_13, buffer);
 
 	IfChoosen(9);
-	sprintf_s(buf, 255, "    %d(%d)", currentSurfaces, numberOfSurfaces);
-	glRasterPos2i(X_OFFSET_SWIATLO, Y_OFFSET_SWIATLO - (step++*stepValue));
-	RysujTekstRastrowy(GLUT_BITMAP_8_BY_13, buf);
+	sprintf_s(buffer, 255, "    %d(%d)", currentSurfaces, numberOfSurfaces);
+	glRasterPos2i(TEXT_POSITION_X, TEXT_POSITION_Y - (step++*stepValue));
+	DrawText(GLUT_BITMAP_8_BY_13, buffer);
 
 }
 
 
-void DrawSzczegolowe(){
+void DrawSpecific(){
 	int step = 1;
 
 	IfChoosen2(0);
-	sprintf_s(buf, 255, "GLU_SAMPLING_METHOD");
-	glRasterPos2i(X_OFFSET_SWIATLO, Y_OFFSET_SWIATLO - (step++*stepValue));
-	RysujTekstRastrowy(GLUT_BITMAP_8_BY_13, buf);
+	sprintf_s(buffer, 255, "GLU_SAMPLING_METHOD");
+	glRasterPos2i(TEXT_POSITION_X, TEXT_POSITION_Y - (step++*stepValue));
+	DrawText(GLUT_BITMAP_8_BY_13, buffer);
 
 	IfChoosen2(1);
-	sprintf_s(buf, 255, "    %s", SamplingMethod);
-	glRasterPos2i(X_OFFSET_SWIATLO, Y_OFFSET_SWIATLO - (step++*stepValue));
-	RysujTekstRastrowy(GLUT_BITMAP_8_BY_13, buf);
+	sprintf_s(buffer, 255, "    %s", SamplingMethod);
+	glRasterPos2i(TEXT_POSITION_X, TEXT_POSITION_Y - (step++*stepValue));
+	DrawText(GLUT_BITMAP_8_BY_13, buffer);
 
 	IfChoosen2(2);
-	sprintf_s(buf, 255, "GLU_SAMPLING_TOLERANCE");
-	glRasterPos2i(X_OFFSET_SWIATLO, Y_OFFSET_SWIATLO - (step++*stepValue));
-	RysujTekstRastrowy(GLUT_BITMAP_8_BY_13, buf);
+	sprintf_s(buffer, 255, "GLU_SAMPLING_TOLERANCE");
+	glRasterPos2i(TEXT_POSITION_X, TEXT_POSITION_Y - (step++*stepValue));
+	DrawText(GLUT_BITMAP_8_BY_13, buffer);
 
 	IfChoosen2(3);
-	sprintf_s(buf, 255, "    %.2f", SamplingTolerance);
-	glRasterPos2i(X_OFFSET_SWIATLO, Y_OFFSET_SWIATLO - (step++*stepValue));
-	RysujTekstRastrowy(GLUT_BITMAP_8_BY_13, buf);
+	sprintf_s(buffer, 255, "    %.2f", SamplingTolerance);
+	glRasterPos2i(TEXT_POSITION_X, TEXT_POSITION_Y - (step++*stepValue));
+	DrawText(GLUT_BITMAP_8_BY_13, buffer);
 
 	IfChoosen2(4);
-	sprintf_s(buf, 255, "GLU_PARAMETRIC_TOLERANCE");
-	glRasterPos2i(X_OFFSET_SWIATLO, Y_OFFSET_SWIATLO - (step++*stepValue));
-	RysujTekstRastrowy(GLUT_BITMAP_8_BY_13, buf);
+	sprintf_s(buffer, 255, "GLU_PARAMETRIC_TOLERANCE");
+	glRasterPos2i(TEXT_POSITION_X, TEXT_POSITION_Y - (step++*stepValue));
+	DrawText(GLUT_BITMAP_8_BY_13, buffer);
 
 	IfChoosen2(5);
-	sprintf_s(buf, 255, "    %.2f",ParametricTolerance);
-	glRasterPos2i(X_OFFSET_SWIATLO, Y_OFFSET_SWIATLO - (step++*stepValue));
-	RysujTekstRastrowy(GLUT_BITMAP_8_BY_13, buf);
+	sprintf_s(buffer, 255, "    %.2f",ParametricTolerance);
+	glRasterPos2i(TEXT_POSITION_X, TEXT_POSITION_Y - (step++*stepValue));
+	DrawText(GLUT_BITMAP_8_BY_13, buffer);
 
 	IfChoosen2(6);
-	sprintf_s(buf, 255, "GLU_U_STEP");
-	glRasterPos2i(X_OFFSET_SWIATLO, Y_OFFSET_SWIATLO - (step++*stepValue));
-	RysujTekstRastrowy(GLUT_BITMAP_8_BY_13, buf);
+	sprintf_s(buffer, 255, "GLU_U_STEP");
+	glRasterPos2i(TEXT_POSITION_X, TEXT_POSITION_Y - (step++*stepValue));
+	DrawText(GLUT_BITMAP_8_BY_13, buffer);
 
 	IfChoosen2(7);
-	sprintf_s(buf, 255, "    %d", UStep);
-	glRasterPos2i(X_OFFSET_SWIATLO, Y_OFFSET_SWIATLO - (step++*stepValue));
-	RysujTekstRastrowy(GLUT_BITMAP_8_BY_13, buf);
+	sprintf_s(buffer, 255, "    %d", UStep);
+	glRasterPos2i(TEXT_POSITION_X, TEXT_POSITION_Y - (step++*stepValue));
+	DrawText(GLUT_BITMAP_8_BY_13, buffer);
 
 	IfChoosen2(8);
-	sprintf_s(buf, 255, "GLU_V_STEP");
-	glRasterPos2i(X_OFFSET_SWIATLO, Y_OFFSET_SWIATLO - (step++*stepValue));
-	RysujTekstRastrowy(GLUT_BITMAP_8_BY_13, buf);
+	sprintf_s(buffer, 255, "GLU_V_STEP");
+	glRasterPos2i(TEXT_POSITION_X, TEXT_POSITION_Y - (step++*stepValue));
+	DrawText(GLUT_BITMAP_8_BY_13, buffer);
 
 	IfChoosen2(9);
-	sprintf_s(buf, 255, "    %d", VStep);
-	glRasterPos2i(X_OFFSET_SWIATLO, Y_OFFSET_SWIATLO - (step++*stepValue));
-	RysujTekstRastrowy(GLUT_BITMAP_8_BY_13, buf);
+	sprintf_s(buffer, 255, "    %d", VStep);
+	glRasterPos2i(TEXT_POSITION_X, TEXT_POSITION_Y - (step++*stepValue));
+	DrawText(GLUT_BITMAP_8_BY_13, buffer);
 
 	IfChoosen2(10);
-	sprintf_s(buf, 255, "GLU_CULLING");
-	glRasterPos2i(X_OFFSET_SWIATLO, Y_OFFSET_SWIATLO - (step++*stepValue));
-	RysujTekstRastrowy(GLUT_BITMAP_8_BY_13, buf);
+	sprintf_s(buffer, 255, "GLU_CULLING");
+	glRasterPos2i(TEXT_POSITION_X, TEXT_POSITION_Y - (step++*stepValue));
+	DrawText(GLUT_BITMAP_8_BY_13, buffer);
 
 	IfChoosen2(11);
-	sprintf_s(buf, 255, "    %s", Culling);
-	glRasterPos2i(X_OFFSET_SWIATLO, Y_OFFSET_SWIATLO - (step++*stepValue));
-	RysujTekstRastrowy(GLUT_BITMAP_8_BY_13, buf);
+	sprintf_s(buffer, 255, "    %s", Culling);
+	glRasterPos2i(TEXT_POSITION_X, TEXT_POSITION_Y - (step++*stepValue));
+	DrawText(GLUT_BITMAP_8_BY_13, buffer);
 
 	IfChoosen2(12);
-	sprintf_s(buf, 255, "GLU_AUTO_LOAD_MATRIX");
-	glRasterPos2i(X_OFFSET_SWIATLO, Y_OFFSET_SWIATLO - (step++*stepValue));
-	RysujTekstRastrowy(GLUT_BITMAP_8_BY_13, buf);
+	sprintf_s(buffer, 255, "GLU_AUTO_LOAD_MATRIX");
+	glRasterPos2i(TEXT_POSITION_X, TEXT_POSITION_Y - (step++*stepValue));
+	DrawText(GLUT_BITMAP_8_BY_13, buffer);
 
 	IfChoosen2(13);
-	sprintf_s(buf, 255, "    %s", AutoLoadMatrix);
-	glRasterPos2i(X_OFFSET_SWIATLO, Y_OFFSET_SWIATLO - (step++*stepValue));
-	RysujTekstRastrowy(GLUT_BITMAP_8_BY_13, buf);
+	sprintf_s(buffer, 255, "    %s", AutoLoadMatrix);
+	glRasterPos2i(TEXT_POSITION_X, TEXT_POSITION_Y - (step++*stepValue));
+	DrawText(GLUT_BITMAP_8_BY_13, buffer);
 
 	IfChoosen2(14);
-	sprintf_s(buf, 255, "GLU_DISPLAY_MODE");
-	glRasterPos2i(X_OFFSET_SWIATLO, Y_OFFSET_SWIATLO - (step++*stepValue));
-	RysujTekstRastrowy(GLUT_BITMAP_8_BY_13, buf);
+	sprintf_s(buffer, 255, "GLU_DISPLAY_MODE");
+	glRasterPos2i(TEXT_POSITION_X, TEXT_POSITION_Y - (step++*stepValue));
+	DrawText(GLUT_BITMAP_8_BY_13, buffer);
 
 	IfChoosen2(15);
-	sprintf_s(buf, 255, "    %s", DisplayMode);
-	glRasterPos2i(X_OFFSET_SWIATLO, Y_OFFSET_SWIATLO - (step++*stepValue));
-	RysujTekstRastrowy(GLUT_BITMAP_8_BY_13, buf);
+	sprintf_s(buffer, 255, "    %s", DisplayMode);
+	glRasterPos2i(TEXT_POSITION_X, TEXT_POSITION_Y - (step++*stepValue));
+	DrawText(GLUT_BITMAP_8_BY_13, buffer);
 
 }
 
-void RysujNakladke(void)
+void DrawMenu(void)
 {
 
 	// Zmiana typu rzutu z perspektywicznego na ortogonalny
@@ -887,12 +837,12 @@ void RysujNakladke(void)
 	// Okreslenie koloru tekstu
 	glColor3f(1.0, 1.0, 1.0);
 
-	if (ogolne == 1)
-		DrawTlo();
-	else if (ogolne == 2)
-		DrawSzczegolowe();
+	if (general == 1)
+		DrawBackground();
+	else if (general == 2)
+		DrawSpecific();
 	else
-		DrawOgolne();
+		DrawGeneral();
 	
 	// Przywrocenie macierzy sprzed wywolania funkcji
 	glMatrixMode(GL_PROJECTION);
@@ -925,7 +875,7 @@ void Display(void)
 	DrawNurbs();
 
 	if (menu == '1')
-		RysujNakladke();
+		DrawMenu();
 
 	glutSwapBuffers();
 }
@@ -1115,38 +1065,41 @@ int main(int argc, char *argv[]){
 		}
 	}
 	*/
+
 	char *myargv[1];
 	int myargc = 1;
 	myargv[0] =_strdup("NURBS");
 
+	// inicjowanie biblioteki
 	glutInit(&myargc, myargv);
-
+	// ustawienie trybu wyœwietlania
 	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
-
+	// ustawienie pozycji pocz¹tkowej okna
 	glutInitWindowPosition(0, 0);
-
+	// ustawienie pocz¹tkowej szerokoœci i wysokoœci okna
 	glutInitWindowSize(windowWidth, windowHeight);
-
+	// stworzenie okna programu o nazwie NURBS
 	glutCreateWindow("NURBS");
-
+	// w³¹czenie bufora g³êbokoœci
 	glEnable(GL_DEPTH_TEST);
-
+	// ustawienie wartoœci bufora g³êbokoœci
 	glClearDepth(1000.0);
-
-	glClearColor(Rtlo, Gtlo, Btlo, 0.0f);
-
+	// ustawienie koloru t³a
+	glClearColor(RBackground, GBackground, BBackground, 0.0f);
+	// ustawienie wyœwietlania wielok¹tów w trybie linii
 	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
+	// zdefiniowanie g³ównej funkcji, która wyœwietla obraz
 	glutDisplayFunc(Display);
-
+	// zdefiniowanie funkcji wywo³ywanej po zmianie rozmiarów okna
 	glutReshapeFunc(WindowResize);
-
+	// zdefiniowanie funkcji w przypadku bezczynnoœci programu
 	glutIdleFunc(Display);
-
+	// zdefiniowanie funkcji obs³uguj¹cej klawisze klawiatury
 	glutKeyboardFunc(KeyboardKeys);
-
+	// zdefiniowanie funkcji obs³uguj¹cej klawisze specjalne
 	glutSpecialFunc(KeyboardSpecialKeys);
-
+	// w³¹czenie zapêtlenia wykonywania siê programu
 	glutMainLoop();
 
 	return 0;
