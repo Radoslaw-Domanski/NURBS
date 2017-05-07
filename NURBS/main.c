@@ -48,7 +48,7 @@ int highlighted = 0;
 int highlighted2 = 0;
 double maxDepth = 1000;
 double minDepth = 1;
-struct Surface surfaces[5];
+struct Surface surfaces[10];
 int windowWidth = 1024;
 int windowHeight = 768;
 int	numberOfSurfaces = 0;
@@ -62,7 +62,6 @@ GLfloat positionX = 20.0;
 GLUnurbsObj *nurb;
 int u, v;
 int i, j, k;
-////////////////////////////////////////////////////////////////////////
 
 //////////////////////////
 /*	DRAW AXIS FUNCTION	*/
@@ -91,6 +90,7 @@ void DrawAxis()
 	glVertex3f(0.0, -2.0, 20.0);
 	glVertex3f(0.0, 2.0, 20.0);
 	glEnd();
+
 }
 
 //////////////////////////////
@@ -141,9 +141,6 @@ void DrawNurbs()
 {
 	glClearColor(RBackground,GBackground,BBackground, 0.0f);
 	glColor3f(RObject,GObject,BObject);
-	//glEnable(GL_LIGHT0);
-	//glEnable(GL_LIGHTING);
-	//glEnable(GL_LIGHT0);
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_AUTO_NORMAL);
 	glEnable(GL_NORMALIZE);
@@ -180,9 +177,6 @@ void DrawNurbs()
 		gluNurbsProperty(nurb, GLU_AUTO_LOAD_MATRIX, GL_TRUE);
 	else
 		gluNurbsProperty(nurb, GLU_AUTO_LOAD_MATRIX, GL_FALSE);
-
-	//gluNurbsProperty(nurb, GLU_NURBS_MODE, GLU_OUTLINE_PATCH);
-	//gluNurbsProperty(nurb, GLU_AUTO, GLU_PARAMETRIC_ERROR);
 
 	glMatrixMode(GL_PROJECTION);
 	glMatrixMode(GL_MODELVIEW);
@@ -621,11 +615,19 @@ void KeyboardKeys(unsigned char key, int x, int y)
 
 }
 
+//////////////////////////
+/*	DRAW TEXT IN MENU	*/
+//////////////////////////
+
 void DrawText(void *font, char *tekst)
 {
 	for (i = 0; i < (int)strlen(tekst); i++)
 		glutBitmapCharacter(font, tekst[i]);
 }
+
+//////////////////////////
+/*	HIGHLIGHT MENU TEXT	*/
+//////////////////////////
 
 void IfChoosen(int x){
 	if (highlighted == x)
@@ -633,13 +635,22 @@ void IfChoosen(int x){
 	else glColor3f(1.0, 1.0, 1.0);
 }
 
+//////////////////////////////
+/*	HIGHLIGHT MENU TEXT 2	*/
+//////////////////////////////
+
 void IfChoosen2(int x){
 	if (highlighted2 == x)
 		glColor3f(1.0, 0.0, 0.0);
 	else glColor3f(1.0, 1.0, 1.0);
 }
 
+//////////////////////////
+/*	DRAW GENERAL MENU	*/
+//////////////////////////
+
 void DrawGeneral(){	
+
 	int step = 1;
 	
 	sprintf_s(buffer, 255, "F1  - widocznosc menu");
@@ -679,7 +690,12 @@ void DrawGeneral(){
 	DrawText(GLUT_BITMAP_8_BY_13, buffer);
 }
 
+//////////////////////
+/*	DRAW FIRST MENU	*/
+//////////////////////
+
 void DrawBackground(){
+
 	int step = 1;
 
 	IfChoosen(0);
@@ -734,6 +750,9 @@ void DrawBackground(){
 
 }
 
+//////////////////////////
+/*	DRAW SPECIFIC MENU	*/
+//////////////////////////
 
 void DrawSpecific(){
 	int step = 1;
@@ -819,6 +838,10 @@ void DrawSpecific(){
 	DrawText(GLUT_BITMAP_8_BY_13, buffer);
 
 }
+
+//////////////////////////
+/*	DRAW MENU ON WINDOW	*/
+//////////////////////////
 
 void DrawMenu(void)
 {
@@ -1027,8 +1050,8 @@ int main(int argc, char *argv[]){
 
 	if (argc > 5){
 		numberOfSurfaces = atoi(argv[1]);
-		if (numberOfSurfaces > 5)
-			numberOfSurfaces = 5;
+		if (numberOfSurfaces > 10)
+			numberOfSurfaces = 10;
 		insertPoints(argv[2]);
 		insertWeights(argv[3]);
 		insertKnotsU(argv[4]);
@@ -1037,34 +1060,6 @@ int main(int argc, char *argv[]){
 	else
 		printf_s("Not enough arguments !\n");
 	currentSurfaces = numberOfSurfaces;
-	// TESTOWANIE DANYCH
-	//int x = 1;
-	/*
-	for (i = 0; i < numberOfSurfaces; i++){
-		for (j = 0; j < 4; j++){
-			for (k = 0; k < 4; k++){
-				printf("%d %.2f %.2f %.2f \n",x, surfaces[i].pts[j][k][0], surfaces[i].pts[j][k][1], surfaces[i].pts[j][k][2]);
-				x++;
-			}
-		}
-	}
-	*/
-	/*
-	for (i = 0; i < numberOfSurfaces; i++){
-		for (j = 0; j < 16; j++){
-				printf("%d %.2f \n", x, surfaces[i].weights[j]);
-				x++;
-		}
-	}
-	*/
-	/*
-	for (i = 0; i < numberOfSurfaces; i++){
-		for (j = 0; j < 8; j++){
-			printf("%d %.2f \n", x, surfaces[i].knotsV[j]);
-			x++;
-		}
-	}
-	*/
 
 	char *myargv[1];
 	int myargc = 1;
