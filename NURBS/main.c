@@ -69,28 +69,45 @@ int i, j, k;
 
 void DrawAxis()
 {
+	// linie
 	glLineWidth(1.0f);
 	glBegin(GL_LINES);
 
 	glColor3f(1.0, 0.0, 0.0);
 	glVertex3f(-20.0, 0.0, 0.0);
 	glVertex3f(20.0, 0.0, 0.0);
-	glVertex3f(20.0, -2.0, 0);
-	glVertex3f(20.0, 2.0, 0.0);
 
 	glColor3f(0.0, 1.0, 0.0);
 	glVertex3f(0.0, -20.0, 0.0);
 	glVertex3f(0.0, 20.0, 0.0);
-	glVertex3f(-2.0, 20.0, 0);
-	glVertex3f(2.0, 20.0, 0.0);
 
 	glColor3f(0.0, 0.0, 1.0);
 	glVertex3f(0.0, 0.0, -20.0);
 	glVertex3f(0.0, 0.0, 20.0);
-	glVertex3f(0.0, -2.0, 20.0);
-	glVertex3f(0.0, 2.0, 20.0);
 	glEnd();
 
+	// czerwona strzalka
+	glColor3f(1.0, 0.0, 0.0);
+	glPushMatrix();
+	glTranslatef(19.0, 0, 0);
+	glRotatef(270, 1.0, 0.0, 0.0);
+	glRotatef(90, 0.0, 1.0, 0.0);
+	glutSolidCone(0.5, 1.0, 20.0, 20.0);
+	glPopMatrix();
+
+	// zielona strzalka
+	glColor3f(0.0, 1.0, 0.0);
+	glPushMatrix();
+	glTranslatef(0, 19.0, 0);
+	glRotatef(270, 1.0, 0.0, 0.0);
+	glutSolidCone(0.5, 1.0, 20.0, 20.0);
+	glPopMatrix();
+	// niebieska strzalka
+	glColor3f(0.0, 0.0, 1.0);
+	glPushMatrix();
+	glTranslatef(0, 0, 19.0);
+	glutSolidCone(0.5, 1.0, 20.0, 20.0);
+	glPopMatrix();
 }
 
 //////////////////////////////
